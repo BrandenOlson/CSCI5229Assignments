@@ -30,7 +30,7 @@ int ph=0;       // Elevation of view angle
 int mode=1;     // Dimension (1-4)
 double z=0;     // Z variable
 double w=1;     // W variable
-double dim=2;   // Dimension of orthogonal box
+double dim=50;   // Dimension of orthogonal box
 char* text[] = {"","2D","3D constant Z","3D","4D"};  // Dimension display text
 
 const int NUM_POINTS = 5;
@@ -71,12 +71,12 @@ void display()
    glRotated(th, 0, 1, 0);
    //Draw Lorenz attractor
    glColor3f(1,1,0);
-   glPointSize(2);
+   glPointSize(0.5);
    glBegin(GL_POINTS);
    double x = 1;
    double y = 1;
    double z = 1;
-   double dt = 0.0001;
+   double dt = 0.001;
    for(int i = 1; i < 50000; i++)
    {
       double dx = s*(y-x);
