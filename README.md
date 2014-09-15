@@ -1,4 +1,4 @@
 CSCI5229
 ========
 
-This is a repository for my assigmnets for CSCI 5229: Computer Graphics.
+This is a repository for my assignments for CSCI 5229: Computer Graphics.
