@@ -1,7 +1,7 @@
 /*
- *  lorenzVisualizer.c
- *  Author: Branden Olson
- *  Email: Branden.Olson@colorado.edu
+ *  Coordinates
+ *
+ *  Display 2, 3 and 4 dimensional coordinates in 3D.
  *
  *  Key bindings:
  *  1      2D coordinates
@@ -30,13 +30,8 @@ int ph=0;       // Elevation of view angle
 int mode=1;     // Dimension (1-4)
 double z=0;     // Z variable
 double w=1;     // W variable
-double dim=60;   // Dimension of orthogonal box
+double dim=2;   // Dimension of orthogonal box
 char* text[] = {"","2D","3D constant Z","3D","4D"};  // Dimension display text
-
-const int NUM_POINTS = 50000;
-double s = 10;
-double b = 2.6666;
-double r = 28;
 
 /*
  *  Convenience routine to output raster text
@@ -62,76 +57,77 @@ void Print(const char* format , ...)
  */
 void display()
 {
-   double AXIS_LENGTH = dim/1.2; 
-   // Clear image
+   //  Clear the image
    glClear(GL_COLOR_BUFFER_BIT);
-   // Reset previous transforms
+   //  Reset previous transforms
    glLoadIdentity();
-   // Set view angle
-   glRotated(ph, 1, 0, 0);
-   glRotated(th, 0, 1, 0);
-   //Draw Lorenz attractor
+   //  Set view angle
+   glRotated(ph,1,0,0);
+   glRotated(th,0,1,0);
+   //  Draw 10 pixel yellow points
    glColor3f(1,1,0);
-   glPointSize(0.5);
-   glBegin(GL_LINE_STRIP);
-   glColor3f(0,0,0);
-   double x = 1;
-   double y = 1;
-   double z = 1;
-   double dt = 0.001;
-   double color = 0.0;
-   int step = 0;
-   int up = 1;
-   for(int i = 1; i < NUM_POINTS; i++)
+   glPointSize(10);
+   glBegin(GL_POINTS);
+   switch (mode)
    {
-      if( !up )
-      {
-         glColor3f(1, 1 - color, 0);
-      }
-      else
-      {
-         glColor3f(1, color, 0);
-      }
-      double dx = s*(y-x);
-      double dy = x*(r - z) - y;
-      double dz = x*y - b*z;
-      x += dt*dx;
-      y += dt*dy;
-      z += dt*dz;
-      glVertex3d(x, y, z);
-      step++;
-      if( step > 5 )
-      {
-         color += 0.01;
-         step = 0;
-      }
-      if ( color > 1.0 ) 
-      {
-         color = 0.0;
-         up = !up;
-      }
+   //  Two dimensions
+   case 1:
+      glVertex2d(0.1,0.1);
+      glVertex2d(0.3,0.3);
+      glVertex2d(0.5,0.5);
+      glVertex2d(0.7,0.7);
+      glVertex2d(0.9,0.9);
+      break;
+   //  Three dimensions - constant Z
+   case 2:
+      glVertex3d(0.1,0.1,z);
+      glVertex3d(0.3,0.3,z);
+      glVertex3d(0.5,0.5,z);
+      glVertex3d(0.7,0.7,z);
+      glVertex3d(0.9,0.9,z);
+      break;
+   //  Three dimensions - variable Z
+   case 3:
+      glVertex3d(0.1,0.1,0.1);
+      glVertex3d(0.3,0.3,0.2);
+      glVertex3d(0.5,0.5,0.4);
+      glVertex3d(0.7,0.7,0.6);
+      glVertex3d(0.9,0.9,0.9);
+      break;
+   //  Four dimensions
+   case 4:
+      glVertex4d(0.1,0.1,0.1,w);
+      glVertex4d(0.3,0.3,0.2,w);
+      glVertex4d(0.5,0.5,0.4,w);
+      glVertex4d(0.7,0.7,0.6,w);
+      glVertex4d(0.9,0.9,0.9,w);
+      break;
    }
-   glColor3f(1,1,1);
    glEnd();
    //  Draw axes in white
    glColor3f(1,1,1);
    glBegin(GL_LINES);
    glVertex3d(0,0,0);
-   glVertex3d(AXIS_LENGTH,0,0);
+   glVertex3d(1,0,0);
    glVertex3d(0,0,0);
-   glVertex3d(0, AXIS_LENGTH, 0);
+   glVertex3d(0,1,0);
    glVertex3d(0,0,0);
-   glVertex3d(0,0,AXIS_LENGTH);
+   glVertex3d(0,0,1);
    glEnd();
    //  Label axes
-   glRasterPos3d(AXIS_LENGTH,0,0);
+   glRasterPos3d(1,0,0);
    Print("X");
-   glRasterPos3d(0,AXIS_LENGTH,0);
+   glRasterPos3d(0,1,0);
    Print("Y");
-   glRasterPos3d(0,0,AXIS_LENGTH);
+   glRasterPos3d(0,0,1);
    Print("Z");
    //  Display parameters
    glWindowPos2i(5,5);
+   Print("View Angle=%d,%d  %s",th,ph,text[mode]);
+   if (mode==2)
+      Print("  z=%.1f",z);
+   else if (mode==4)
+      Print("  w=%.1f",w);
    //  Flush and swap
    glFlush();
    glutSwapBuffers();
