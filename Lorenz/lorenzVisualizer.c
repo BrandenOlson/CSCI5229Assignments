@@ -27,17 +27,21 @@
 //  Globals
 int th=0;       // Azimuth of view angle
 int ph=0;       // Elevation of view angle
-int mode=1;     // Dimension (1-4)
+int mode=0;     // Dimension (1-4)
 double z=0;     // Z variable
 double w=1;     // W variable
 double dim=60;   // Dimension of orthogonal box
-char* text[] = {"","2D","3D constant Z","3D","4D"};  // Dimension display text
 
 const int NUM_POINTS = 50000;
 double s = 10;
 double b = 2.6666;
 double r = 28;
 
+const int S_MODE = 1;
+const int B_MODE = 2;
+const int R_MODE = 3;
+
+char* text[] = {"", "S", "B", "R"};
 /*
  *  Convenience routine to output raster text
  *  Use VARARGS to make this more flexible
@@ -132,6 +136,12 @@ void display()
    Print("Z");
    //  Display parameters
    glWindowPos2i(5,5);
+   Print("View Angle=%d, %d, ", th, ph);
+   if( mode > 0)
+   {
+      Print("Mode = %s, ", text[mode]);
+   }
+   Print("s = %.1f, b = %.1f, r = %.1f", s, b, r);
    //  Flush and swap
    glFlush();
    glutSwapBuffers();
@@ -145,32 +155,64 @@ void key(unsigned char ch,int x,int y)
    //  Exit on ESC
    if (ch == 27)
       exit(0);
-   //  Reset view angle
+   //  Reset view angle and default paramter values for the attractor
    else if (ch == '0')
-      th = ph = 0;
-   //  Switch dimensions
-   else if ('1'<=ch && ch<='4')
    {
-      mode = ch-'0';
-      if (mode==2) z = 0;
-      if (mode==4) w = 1;
+      th = ph = 0;
+      s = 10;
+      b = 2.6666;
+      r = 28;
    }
-   //  Increase w by 0.1
+   // Allow the paramter s to vary
+   else if (ch == 's' || ch == 'S')
+   {
+      mode = S_MODE;
+   }
+   // Allow the paramter b to vary 
+   else if (ch == 'b' || ch == 'B')
+   {
+      mode = B_MODE;
+   }
+   // Allow the paramter r to vary
+   else if (ch == 'r' || ch == 'R')
+   {
+      mode = R_MODE;
+   }
+
    else if (ch == '+')
    {
-      if (mode==2)
-         z += 0.1;
-      else
-         w += 0.1;
+      // Increase the paramter corresponding to the current mode
+      if ( S_MODE == mode )
+      {
+         s += 0.1; 
+      }
+      else if ( B_MODE == mode )
+      {
+         b += 0.1111; 
+      }
+      else if ( R_MODE == mode )
+      {
+         r += 0.1; 
+      }
    }
-   //  Decrease w by 0.1
-   else if (ch == '-')
+   else if ('-' == ch)
    {
-      if (mode==2)
-         z -= 0.1;
-      else
-         w -= 0.1;
+      // Decrease the paramter corresponding to the current mode
+      if ( S_MODE == mode )
+      {
+         s -= 0.1; 
+      }
+      else if ( B_MODE == mode )
+      {
+         b -= 0.1111; 
+      }
+      else if ( R_MODE == mode )
+      {
+         r -= 0.1; 
+      }
+
    }
+
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -233,7 +275,7 @@ int main(int argc,char* argv[])
    //  Request 500 x 500 pixel window
    glutInitWindowSize(500,500);
    //  Create the window
-   glutCreateWindow("Coordinates");
+   glutCreateWindow("Visualizing the Lorenz Attractor");
    //  Tell GLUT to call "display" when the scene should be drawn
    glutDisplayFunc(display);
   //  Tell GLUT to call "reshape" when the window is resized
