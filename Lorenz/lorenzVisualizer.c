@@ -79,6 +79,7 @@ void display()
    glPointSize(0.5);
    glBegin(GL_LINE_STRIP);
    glColor3f(0,0,0);
+   // Set the initial vertex to (1, 1, 1)
    double x = 1;
    double y = 1;
    double z = 1;
@@ -86,6 +87,7 @@ void display()
    double color = 0.0;
    int step = 0;
    int up = 1;
+   // Go through the algorithm to generate all desired Lorenz points/lines
    for(int i = 1; i < NUM_POINTS; i++)
    {
       if( !up )
