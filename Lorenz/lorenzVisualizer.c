@@ -74,7 +74,7 @@ void display()
    // Set view angle
    glRotated(ph, 1, 0, 0);
    glRotated(th, 0, 1, 0);
-   //Draw Lorenz attractor
+   // Setup to draw Lorenz attractor
    glColor3f(1,1,0);
    glPointSize(0.5);
    glBegin(GL_LINE_STRIP);
@@ -212,7 +212,6 @@ void key(unsigned char ch,int x,int y)
       {
          r -= 0.1; 
       }
-
    }
 
    //  Tell GLUT it is necessary to redisplay the scene
