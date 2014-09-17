@@ -1,8 +1,8 @@
 The Lorenz Visualizer
 =====================
-Author: Branden Olson
-E-mail: branden.olson@colorado.edu
-Source file: lorenzVisualizer.c
+Author: Branden Olson  
+E-mail: branden.olson@colorado.edu  
+Source file: lorenzVisualizer.c  
 
 Basic Controls
 ==============
