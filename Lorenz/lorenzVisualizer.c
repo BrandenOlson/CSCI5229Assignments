@@ -11,6 +11,7 @@
  *  0        Reset view angle
  *  ESC      Exit
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -23,12 +24,12 @@
 #endif
 
 //  Globals
-int th = 0;       // Azimuth of view angle
-int ph = 0;       // Elevation of view angle
-int mode = 0;     // Dimension (1-4)
-double z = 0;     // Z variable
-double w = 1;     // W variable
-double dim = 60;   // Dimension of orthogonal box
+int theta = 0;       // Azimuth of view angle
+int phi = 0;         // Elevation of view angle
+int mode = 0;        // Dimension (1-4)
+double z = 0;        // Z variable
+double w = 1;        // W variable
+double dim = 60;     // Dimension of orthogonal box
 
 const int NUM_POINTS = 50000;
 // These are the default parameters. They can be changed at runtime
@@ -61,20 +62,15 @@ void Print(const char* format, ...)
       glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *ch++);
 }
 
-/*
- *  Display the scene
- */
 void display()
 {
    double AXIS_LENGTH = dim/1.2; 
-   // Clear image
    glClear(GL_COLOR_BUFFER_BIT);
    // Reset previous transforms
    glLoadIdentity();
    // Set view angle
-   glRotated(ph, 1, 0, 0);
-   glRotated(th, 0, 1, 0);
-   // Setup to draw Lorenz attractor
+   glRotated(phi, 1, 0, 0);
+   glRotated(theta, 0, 1, 0);
    glColor3f(1, 1, 0);
    glPointSize(0.5);
    glBegin(GL_LINE_STRIP);
@@ -138,44 +134,37 @@ void display()
    Print("Z");
    //  Display parameters
    glWindowPos2i(5, 5);
-   Print("View Angle=%d, %d, ", th, ph);
+   Print("View Angle=%d, %d, ", theta, phi);
    if( mode > 0)
    {
       Print("Mode = %s, ", text[mode]);
    }
    Print("s = %.1f, b = %.1f, r = %.1f", s, b, r);
-   //  Flush and swap
    glFlush();
    glutSwapBuffers();
 }
 
-/*
- *  GLUT calls this routine when a key is pressed
- */
 void key(unsigned char ch, int x, int y)
 {
    //  Exit on ESC
    if (ch == 27)
       exit(0);
-   //  Reset view angle and default paramter values for the attractor
    else if (ch == '0')
    {
-      th = ph = 0;
+      //  Reset view angle and default paramter values for the attractor
+      theta = phi = 0;
       s = 10;
       b = 2.6666;
       r = 28;
    }
-   // Allow the paramter s to vary
    else if (ch == 's' || ch == 'S')
    {
       mode = S_MODE;
    }
-   // Allow the paramter b to vary 
    else if (ch == 'b' || ch == 'B')
    {
       mode = B_MODE;
    }
-   // Allow the paramter r to vary
    else if (ch == 'r' || ch == 'R')
    {
       mode = R_MODE;
@@ -214,37 +203,25 @@ void key(unsigned char ch, int x, int y)
       }
    }
 
-   //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
 
-/*
- *  GLUT calls this routine when an arrow key is pressed
- */
 void special(int key, int x, int y)
 {
-   //  Right arrow key - increase azimuth by 5 degrees
    if (key == GLUT_KEY_RIGHT)
-      th += 5;
-   //  Left arrow key - decrease azimuth by 5 degrees
+      theta += 5;
    else if (key == GLUT_KEY_LEFT)
-      th -= 5;
-   //  Up arrow key - increase elevation by 5 degrees
+      theta -= 5;
    else if (key == GLUT_KEY_UP)
-      ph += 5;
-   //  Down arrow key - decrease elevation by 5 degrees
+      phi += 5;
    else if (key == GLUT_KEY_DOWN)
-      ph -= 5;
+      phi -= 5;
    //  Keep angles to +/-360 degrees
-   th %= 360;
-   ph %= 360;
-   //  Tell GLUT it is necessary to redisplay the scene
+   theta %= 360;
+   phi %= 360;
    glutPostRedisplay();
 }
 
-/*
- *  GLUT calls this routine when the window is resized
- */
 void reshape(int width, int height)
 {
    //  Ratio of the width to the height of the window
@@ -264,29 +241,16 @@ void reshape(int width, int height)
    glLoadIdentity();
 }
 
-/*
- *  Start up GLUT and tell it what to do
- */
 int main(int argc,char* argv[])
 {
-  //  Initialize GLUT and process user parameters
    glutInit(&argc, argv);
-   //  Request double buffered, true color window 
    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-   //  Request 500 x 500 pixel window
    glutInitWindowSize(500,500);
-   //  Create the window
    glutCreateWindow("Visualizing the Lorenz Attractor");
-   //  Tell GLUT to call "display" when the scene should be drawn
    glutDisplayFunc(display);
-  //  Tell GLUT to call "reshape" when the window is resized
    glutReshapeFunc(reshape);
-   //  Tell GLUT to call "special" when an arrow key is pressed
    glutSpecialFunc(special);
-   //  Tell GLUT to call "key" when a key is pressed
    glutKeyboardFunc(key);
-   //  Pass control to GLUT so it can interact with the user
    glutMainLoop();
-   //  Return code
    return 0;
 }
