@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <math.h>
 //  OpenGL with prototypes for glext
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
@@ -56,6 +57,57 @@ void Print(const char* format, ...)
       glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *ch++);
 }
 
+static void triangle(double x1, double y1, double z1,
+                     double x2, double y2, double z2,
+                     double x3, double y3, double z3)
+{
+   glPushMatrix();
+   glBegin(GL_POLYGON);
+   glVertex3d(x1, y1, z1);
+   glVertex3d(x2, y2, z2);
+   glVertex3d(x3, y3, z3);
+   glEnd();
+   glPopMatrix(); 
+}
+ 
+static void square(double x1, double z1, double x2, double z2, 
+                   double x3, double z3, double x4, double z4)
+{
+   glPushMatrix();
+   glBegin(GL_POLYGON);
+   glVertex3d(x1, 0, z1);
+   glVertex3d(x2, 0, z2);
+   glVertex3d(x3, 0, z3);
+   glVertex3d(x4, 0, z4);
+   glEnd();
+   glPopMatrix();
+}
+
+// Invariant: Pyramids can only have their base at y = 0 for simplicity
+static void pyramid(double x1, double z1, double x2, double z2,
+                    double x3, double z3, double x4, double z4,
+                    double height )
+{
+   glPushMatrix();
+   double xtop = sqrt(x1*x1 - x3*x3);
+   double ztop = sqrt(z1*z1 - z3*z3);
+   glColor3f(0, 0, 1);
+   triangle(x1, 0, z1, xtop, height, ztop,
+            x2, 0, z2);
+   glColor3f(1, 1, 0);
+   triangle(x2, 0, z2, xtop, height, ztop,
+            x3, 0, z3);
+   glColor3f(1, 0, 0);
+   triangle(x3, 0, z3, xtop, height, ztop,
+            x4, 0, z4);
+   glColor3f(0, 1, 0);
+   triangle(x4, 0, z4, xtop, height, ztop,
+            x1, 0, z1);
+   glColor3f(1, 0, 1);
+   square(x1, z1, x2, z2, x3, z3, x4, z4);
+   glPopMatrix();
+}
+
 void display()
 {
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -67,45 +119,11 @@ void display()
    glRotated(theta, 0, 1, 0);
 
    // Draw stuff
-   double x0 = 20;
-   double y0 = 20;
-   double z0 = 20;
-   
-   glColor3f(0, 0, 1);
-   glBegin(GL_POLYGON);
-   glVertex3d(0, y0, 0);
-   glVertex3d(x0, 0, 0);
-   glVertex3d(0, 0, -z0); 
-   glEnd();
+   double x1 = 20;
+   double height = 20;
+   double z1 = 20;
+   pyramid(x1, 0, 0, z1, -x1, 0, 0, -z1, height); 
 
-   glColor3f(0, 1, 0);
-   glBegin(GL_POLYGON);
-   glVertex3d(0, y0, 0);
-   glVertex3d(0, 0, z0);
-   glVertex3d(x0, 0, 0); 
-   glEnd();
-
-   glColor3f(1, 0, 1);
-   glBegin(GL_POLYGON);
-   glVertex3d(0, y0, 0);
-   glVertex3d(-x0, 0, 0);
-   glVertex3d(0, 0, z0); 
-   glEnd();
-   
-   glColor3f(1, 0, 0);
-   glBegin(GL_POLYGON);
-   glVertex3d(0, y0, 0);
-   glVertex3d(0, 0, -z0);
-   glVertex3d(-x0, 0, 0); 
-   glEnd();
-
-   glColor3f(1, 1, 0);
-   glBegin(GL_POLYGON);
-   glVertex3d(x0, 0, 0);
-   glVertex3d(0, 0, -z0);
-   glVertex3d(-x0, 0, 0);
-   glVertex3d(0, 0, z0); 
-   glEnd();
 
    //  Draw axes in white
    glColor3f(1, 1, 1);
