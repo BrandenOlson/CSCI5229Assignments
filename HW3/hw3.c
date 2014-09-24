@@ -84,27 +84,25 @@ static void square(double x1, double z1, double x2, double z2,
 }
 
 // Invariant: Pyramids can only have their base at y = 0 for simplicity
-static void pyramid(double x1, double z1, double x2, double z2,
-                    double x3, double z3, double x4, double z4,
-                    double height )
+static void pyramid(double x, double z, double height, double angle,
+                    double xscale, double yscale, double zscale)
 {
    glPushMatrix();
-   double xtop = sqrt(x1*x1 - x3*x3);
-   double ztop = sqrt(z1*z1 - z3*z3);
+
+   glTranslated(x, 0, z);
+   glRotated(angle, 0, 1, 0);
+   glScaled(xscale, 1, zscale);
+
    glColor3f(0, 0, 1);
-   triangle(x1, 0, z1, xtop, height, ztop,
-            x2, 0, z2);
+   triangle(1, 0, 0, /**/ 0, height, 0, /**/ 0, 0, 1);
    glColor3f(1, 1, 0);
-   triangle(x2, 0, z2, xtop, height, ztop,
-            x3, 0, z3);
+   triangle(0, 0, 1, /**/ 0, height, 0, /**/ -1, 0, 0);
    glColor3f(1, 0, 0);
-   triangle(x3, 0, z3, xtop, height, ztop,
-            x4, 0, z4);
+   triangle(-1, 0, 0, /**/ 0, height, 0, /**/ 0, 0, -1);
    glColor3f(0, 1, 0);
-   triangle(x4, 0, z4, xtop, height, ztop,
-            x1, 0, z1);
+   triangle(0, 0, -1, /**/ 0, height, 0, /**/ 1, 0, 0);
    glColor3f(1, 0, 1);
-   square(x1, z1, x2, z2, x3, z3, x4, z4);
+   square(1, 0, 0, 1, -1, 0, 0, -1);
    glPopMatrix();
 }
 
@@ -119,11 +117,8 @@ void display()
    glRotated(theta, 0, 1, 0);
 
    // Draw stuff
-   double x1 = 20;
-   double height = 20;
-   double z1 = 20;
-   pyramid(x1, 0, 0, z1, -x1, 0, 0, -z1, height); 
-
+   pyramid(0, 0, 20, 0, 20, 0, 20); 
+   pyramid(30, 40, 10, 20, 15, 0, 15); 
 
    //  Draw axes in white
    glColor3f(1, 1, 1);
