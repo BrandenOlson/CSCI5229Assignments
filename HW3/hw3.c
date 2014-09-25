@@ -18,6 +18,10 @@
 #include <GL/glut.h>
 #endif
 
+#define PI 3.14159265358979323846
+#define Cos(x) (cos((x)*PI/180))
+#define Sin(x) (sin((x)*PI/180))
+
 //  Globals
 int theta = 0;       // Azimuth of view angle
 int phi = 0;         // Elevation of view angle
@@ -106,6 +110,82 @@ static void pyramid(double x, double z, double height, double angle,
    glPopMatrix();
 }
 
+static void Vertex(double th,double ph)
+{
+   glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
+}
+
+static void sphere(double x, double y, double z, double r)
+{
+   const int d = 5;
+   int th, ph = 0;
+
+   //  Save transformation
+   glPushMatrix();
+   //  Offset and scale
+   glTranslated(x, y, z);
+   glScaled(r, r, r);
+
+   //  Latitude bands
+   for (ph = -90; ph < 90; ph += d)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (th=0; th<=360; th+=d)
+      {
+         Vertex(th, ph);
+         Vertex(th, ph+d);
+      }
+      glEnd();
+   }
+
+   //  Undo transformations
+   glPopMatrix();
+}
+
+static void cylinder(double r, double h, double x, double y, double z, 
+                     double rotation)
+{
+   const int SIDE_COUNT = 100;
+   glPushMatrix();
+
+   glTranslated(x, y, z);
+   if( rotation )
+   {
+      glRotated(rotation, 1, 0, 0);
+   } 
+
+   glBegin(GL_QUAD_STRIP); 
+   for (int i = 0; i <= SIDE_COUNT; i++) {     
+       float angle = i*((1.0/SIDE_COUNT) * (2*PI));
+       glNormal3d( cos(angle),0,sin(angle) );
+       glVertex3d( r*cos(angle), h, r*sin(angle) );
+       glVertex3d( r*cos(angle), 0, r*sin(angle) );   }
+   glEnd();
+
+   glPopMatrix();
+}
+
+static void drawCactus(double r, double h, double x, double z, double th)
+{
+   glPushMatrix();
+
+   glRotated(th, 0, 1, 0);
+
+   cylinder(r, h, x, 0, z, 0);
+   sphere(x, h, z, r);
+   cylinder(r, h/3, x, h/3, z, 90);
+   sphere(x, h/3, z + h/3, r);
+   cylinder(r, h/3, x, h/3, z + h/3, 0);
+   sphere(x, h/3 + h/3, z + h/3, r);
+
+   cylinder(r, h/3, x, 3*h/5, z, 270); 
+   sphere(x, 3*h/5, z - h/3, r);
+   cylinder(r, h/4, x, 3*h/5, z -h/3, 0);
+   sphere(x, h/4 + 3*h/5, z - h/3, r);
+
+   glPopMatrix();
+}
+
 void display()
 {
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -117,8 +197,19 @@ void display()
    glRotated(theta, 0, 1, 0);
 
    // Draw stuff
-   pyramid(0, 0, 20, 0, 20, 0, 20); 
-   pyramid(30, 40, 10, 20, 15, 0, 15); 
+   pyramid(0, 0, 30, 0, 20, 0, 20); 
+   pyramid(30, 40, 10, 45, 15, 0, 15); 
+   pyramid(-30, -40, 15, 60, 10, 1, 5);
+   pyramid(-40, 0, 5, 80, 5, 1, 5);
+
+   double cactusHeight = 20;
+   double cactusRadius = 2; 
+
+   glColor3d(0, 0.5, 0);
+   
+   drawCactus(cactusRadius, cactusHeight, -40, 40, 45);
+   drawCactus(cactusRadius/2, cactusHeight/2, 40, -30, 0);
+   drawCactus(cactusRadius/1.5, cactusHeight/1.5, 20, -35, 30);
 
    //  Draw axes in white
    glColor3f(1, 1, 1);
