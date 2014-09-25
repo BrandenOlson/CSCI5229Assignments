@@ -151,6 +151,7 @@ static void cylinder(double r, double h, double x, double y, double z,
    glTranslated(x, y, z);
    if( rotation )
    {
+      // Draw cylinder sideways for cactus branches
       glRotated(rotation, 1, 0, 0);
    } 
 
@@ -169,19 +170,20 @@ static void drawCactus(double r, double h, double x, double z, double th)
 {
    glPushMatrix();
 
+   glTranslated(x, 0, z);
    glRotated(th, 0, 1, 0);
 
-   cylinder(r, h, x, 0, z, 0);
-   sphere(x, h, z, r);
-   cylinder(r, h/3, x, h/3, z, 90);
-   sphere(x, h/3, z + h/3, r);
-   cylinder(r, h/3, x, h/3, z + h/3, 0);
-   sphere(x, h/3 + h/3, z + h/3, r);
+   cylinder(r, h, 0, 0, 0, 0);
+   sphere(0, h, 0, r);
+   cylinder(r, h/3, 0, h/3, 0, 90);
+   sphere(0, h/3, 0 + h/3, r);
+   cylinder(r, h/3, 0, h/3, 0 + h/3, 0);
+   sphere(0, h/3 + h/3, 0 + h/3, r);
 
-   cylinder(r, h/3, x, 3*h/5, z, 270); 
-   sphere(x, 3*h/5, z - h/3, r);
-   cylinder(r, h/4, x, 3*h/5, z -h/3, 0);
-   sphere(x, h/4 + 3*h/5, z - h/3, r);
+   cylinder(r, h/3, 0, 3*h/5, 0, 270); 
+   sphere(0, 3*h/5, 0 - h/3, r);
+   cylinder(r, h/4, 0, 3*h/5, 0 -h/3, 0);
+   sphere(0, h/4 + 3*h/5, 0 - h/3, r);
 
    glPopMatrix();
 }
@@ -198,18 +200,20 @@ void display()
 
    // Draw stuff
    pyramid(0, 0, 30, 0, 20, 0, 20); 
-   pyramid(30, 40, 10, 45, 15, 0, 15); 
-   pyramid(-30, -40, 15, 60, 10, 1, 5);
-   pyramid(-40, 0, 5, 80, 5, 1, 5);
+   pyramid(30, 40, 20, 45, 15, 0, 15); 
+   pyramid(-20, -30, 10, 60, 10, 1, 10);
+   pyramid(-40, 0, 15, 80, 5, 1, 5);
 
    double cactusHeight = 20;
    double cactusRadius = 2; 
 
    glColor3d(0, 0.5, 0);
    
-   drawCactus(cactusRadius, cactusHeight, -40, 40, 45);
-   drawCactus(cactusRadius/2, cactusHeight/2, 40, -30, 0);
-   drawCactus(cactusRadius/1.5, cactusHeight/1.5, 20, -35, 30);
+   drawCactus(cactusRadius/1.3, cactusHeight/1.3, -20, 35, 75);
+   drawCactus(cactusRadius/2, cactusHeight/2, 40, -30, 120);
+   drawCactus(cactusRadius/1.5, cactusHeight/1.5, 20, -35, 200);
+   drawCactus(cactusRadius/2, cactusHeight/2, -40, -40, 120);
+   drawCactus(cactusRadius/2, cactusHeight/2, 30, 0, 20);
 
    //  Draw axes in white
    glColor3f(1, 1, 1);
