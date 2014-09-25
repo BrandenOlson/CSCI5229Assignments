@@ -344,7 +344,7 @@ int main(int argc,char* argv[])
    glutInit(&argc, argv);
    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
    glutInitWindowSize(500,500);
-   glutCreateWindow("Visualizing the Lorenz Attractor");
+   glutCreateWindow("Ancient Egypt in Technicolor");
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
    glutSpecialFunc(special);
