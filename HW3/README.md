@@ -18,5 +18,5 @@ Basic Controls
 
 Disclaimer
 ----------
-Yes, I realize that there are no such thing as Google-colored catuses, and 
+Yes, I realize that there are no such thing as Google-colored pyramids, and 
 no, I do NOT know if there are actually cactuses in Egypt.
