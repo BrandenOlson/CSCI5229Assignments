@@ -20,3 +20,9 @@ Disclaimer
 ----------
 Yes, I realize that there are no such thing as Google-colored pyramids, and 
 no, I do NOT know if there are actually cactuses in Egypt.
+
+Acknowledgements
+----------------
+I referred to mrmoo's code on opengl.org for help with my drawCylinder
+function. I also made use of the sphere2 and Vertex functions from the class
+examples.

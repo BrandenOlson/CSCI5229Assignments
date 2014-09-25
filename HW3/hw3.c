@@ -30,17 +30,6 @@ double z = 0;        // Z variable
 double w = 1;        // W variable
 double dim = 60;     // Dimension of orthogonal box
 
-const int NUM_POINTS = 50000;
-// These are the default parameters. They can be changed at runtime
-double s = 10;
-double b = 2.6666;
-double r = 28;
-
-const int S_MODE = 1;
-const int B_MODE = 2;
-const int R_MODE = 3;
-
-char* text[] = {"", "S", "B", "R"};
 
 /*
  *  Convenience routine to output raster text
@@ -61,7 +50,7 @@ void Print(const char* format, ...)
       glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *ch++);
 }
 
-static void triangle(double x1, double y1, double z1,
+static void drawTriangle(double x1, double y1, double z1,
                      double x2, double y2, double z2,
                      double x3, double y3, double z3)
 {
@@ -74,7 +63,7 @@ static void triangle(double x1, double y1, double z1,
    glPopMatrix(); 
 }
  
-static void square(double x1, double z1, double x2, double z2, 
+static void drawSquare(double x1, double z1, double x2, double z2, 
                    double x3, double z3, double x4, double z4)
 {
    glPushMatrix();
@@ -88,7 +77,7 @@ static void square(double x1, double z1, double x2, double z2,
 }
 
 // Invariant: Pyramids can only have their base at y = 0 for simplicity
-static void pyramid(double x, double z, double height, double angle,
+static void drawPyramid(double x, double z, double height, double angle,
                     double xscale, double yscale, double zscale)
 {
    glPushMatrix();
@@ -98,24 +87,26 @@ static void pyramid(double x, double z, double height, double angle,
    glScaled(xscale, 1, zscale);
 
    glColor3f(0, 0, 1);
-   triangle(1, 0, 0, /**/ 0, height, 0, /**/ 0, 0, 1);
+   drawTriangle(1, 0, 0, /**/ 0, height, 0, /**/ 0, 0, 1);
    glColor3f(1, 1, 0);
-   triangle(0, 0, 1, /**/ 0, height, 0, /**/ -1, 0, 0);
+   drawTriangle(0, 0, 1, /**/ 0, height, 0, /**/ -1, 0, 0);
    glColor3f(1, 0, 0);
-   triangle(-1, 0, 0, /**/ 0, height, 0, /**/ 0, 0, -1);
+   drawTriangle(-1, 0, 0, /**/ 0, height, 0, /**/ 0, 0, -1);
    glColor3f(0, 1, 0);
-   triangle(0, 0, -1, /**/ 0, height, 0, /**/ 1, 0, 0);
+   drawTriangle(0, 0, -1, /**/ 0, height, 0, /**/ 1, 0, 0);
    glColor3f(1, 0, 1);
-   square(1, 0, 0, 1, -1, 0, 0, -1);
+   drawSquare(1, 0, 0, 1, -1, 0, 0, -1);
    glPopMatrix();
 }
 
+// Grabbed this from example from class
 static void Vertex(double th,double ph)
 {
    glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
 }
 
-static void sphere(double x, double y, double z, double r)
+// Grabbed this from example from class
+static void drawSphere(double x, double y, double z, double r)
 {
    const int d = 5;
    int th, ph = 0;
@@ -142,7 +133,8 @@ static void sphere(double x, double y, double z, double r)
    glPopMatrix();
 }
 
-static void cylinder(double r, double h, double x, double y, double z, 
+// Thanks to mrmoo on opengl.org for help with this
+static void drawCylinder(double r, double h, double x, double y, double z, 
                      double rotation)
 {
    const int SIDE_COUNT = 100;
@@ -158,7 +150,7 @@ static void cylinder(double r, double h, double x, double y, double z,
    glBegin(GL_QUAD_STRIP); 
    for (int i = 0; i <= SIDE_COUNT; i++) {     
        float angle = i*((1.0/SIDE_COUNT) * (2*PI));
-       glNormal3d( cos(angle),0,sin(angle) );
+       glNormal3d( cos(angle), 0, sin(angle) );
        glVertex3d( r*cos(angle), h, r*sin(angle) );
        glVertex3d( r*cos(angle), 0, r*sin(angle) );   }
    glEnd();
@@ -173,17 +165,17 @@ static void drawCactus(double r, double h, double x, double z, double th)
    glTranslated(x, 0, z);
    glRotated(th, 0, 1, 0);
 
-   cylinder(r, h, 0, 0, 0, 0);
-   sphere(0, h, 0, r);
-   cylinder(r, h/3, 0, h/3, 0, 90);
-   sphere(0, h/3, 0 + h/3, r);
-   cylinder(r, h/3, 0, h/3, 0 + h/3, 0);
-   sphere(0, h/3 + h/3, 0 + h/3, r);
+   drawCylinder(r, h, 0, 0, 0, 0);
+   drawSphere(0, h, 0, r);
+   drawCylinder(r, h/3, 0, h/3, 0, 90);
+   drawSphere(0, h/3, 0 + h/3, r);
+   drawCylinder(r, h/3, 0, h/3, 0 + h/3, 0);
+   drawSphere(0, h/3 + h/3, 0 + h/3, r);
 
-   cylinder(r, h/3, 0, 3*h/5, 0, 270); 
-   sphere(0, 3*h/5, 0 - h/3, r);
-   cylinder(r, h/4, 0, 3*h/5, 0 -h/3, 0);
-   sphere(0, h/4 + 3*h/5, 0 - h/3, r);
+   drawCylinder(r, h/3, 0, 3*h/5, 0, 270); 
+   drawSphere(0, 3*h/5, 0 - h/3, r);
+   drawCylinder(r, h/4, 0, 3*h/5, 0 -h/3, 0);
+   drawSphere(0, h/4 + 3*h/5, 0 - h/3, r);
 
    glPopMatrix();
 }
@@ -199,10 +191,10 @@ void display()
    glRotated(theta, 0, 1, 0);
 
    // Draw stuff
-   pyramid(0, 0, 30, 0, 20, 0, 20); 
-   pyramid(30, 40, 20, 45, 15, 0, 15); 
-   pyramid(-20, -30, 10, 60, 10, 1, 10);
-   pyramid(-40, 0, 15, 80, 5, 1, 5);
+   drawPyramid(0, 0, 30, 0, 20, 0, 20); 
+   drawPyramid(30, 40, 20, 45, 15, 0, 15); 
+   drawPyramid(-20, -30, 10, 60, 10, 1, 10);
+   drawPyramid(-40, 0, 15, 80, 5, 1, 5);
 
    double cactusHeight = 20;
    double cactusRadius = 2; 
@@ -237,11 +229,6 @@ void display()
    //  Display parameters
    glWindowPos2i(5, 5);
    Print("View Angle=%d, %d, ", theta, phi);
-   if( mode > 0)
-   {
-      Print("Mode = %s, ", text[mode]);
-   }
-   Print("s = %.1f, b = %.1f, r = %.1f", s, b, r);
    glFlush();
    glutSwapBuffers();
 }
@@ -255,54 +242,6 @@ void key(unsigned char ch, int x, int y)
    {
       //  Reset view angle and default paramter values for the attractor
       theta = phi = 0;
-      s = 10;
-      b = 2.6666;
-      r = 28;
-   }
-   else if (ch == 's' || ch == 'S')
-   {
-      mode = S_MODE;
-   }
-   else if (ch == 'b' || ch == 'B')
-   {
-      mode = B_MODE;
-   }
-   else if (ch == 'r' || ch == 'R')
-   {
-      mode = R_MODE;
-   }
-
-   else if (ch == '+')
-   {
-      // Increase the paramter corresponding to the current mode
-      if ( S_MODE == mode )
-      {
-         s += 0.1; 
-      }
-      else if ( B_MODE == mode )
-      {
-         b += 0.1111; 
-      }
-      else if ( R_MODE == mode )
-      {
-         r += 0.1; 
-      }
-   }
-   else if ('-' == ch)
-   {
-      // Decrease the paramter corresponding to the current mode
-      if ( S_MODE == mode )
-      {
-         s -= 0.1; 
-      }
-      else if ( B_MODE == mode )
-      {
-         b -= 0.1111; 
-      }
-      else if ( R_MODE == mode )
-      {
-         r -= 0.1; 
-      }
    }
 
    glutPostRedisplay();
