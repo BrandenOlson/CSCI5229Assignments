@@ -287,7 +287,7 @@ int main(int argc,char* argv[])
    glutInit(&argc, argv);
    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
    glutInitWindowSize(500,500);
-   glutCreateWindow("Ancient Egypt in Technicolor");
+   glutCreateWindow("Ancient Egypt in Technicolor (by Branden Olson)");
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
    glutSpecialFunc(special);
