@@ -278,7 +278,7 @@ void key(unsigned char ch, int x, int y)
       //  Reset view angle and default paramter values for the attractor
       theta = phi = 0;
    }
-   else if ('m' == ch | 'M' == ch)
+   else if ('m' == ch || 'M' == ch)
    {
       mode = !mode;
    }
