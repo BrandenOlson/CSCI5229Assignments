@@ -1,9 +1,14 @@
 /*
- *  hw3.c
+ *  hw4.c
  *  Author: Branden Olson
  *  Email: Branden.Olson@colorado.edu
  *
  *  Key bindings:
+ *  left/right change the azimuth of view angle
+ *  up/down change the elevation of the view angle
+ *  m/M toggles the viewing mode
+ *  0 resets the angle to the default
+ *  ESC closes the window and terminates the program
  */
 
 #include <stdio.h>
@@ -257,8 +262,8 @@ void display()
    Print("Z");
    //  Display parameters
    glWindowPos2i(5, 5);
-   Print("View Angle=%d, %d, ", theta, phi);
-   Print("Mode=%d", mode);
+   Print("View Angle: %d, %d; ", theta, phi);
+   Print("Mode: %s", mode ? "Perspective" : "Orthogonal");
    glFlush();
    glutSwapBuffers();
 }
@@ -266,14 +271,14 @@ void display()
 void key(unsigned char ch, int x, int y)
 {
    //  Exit on ESC
-   if (ch == 27)
+   if (27 == ch)
       exit(0);
-   else if (ch == '0')
+   else if ('0' == ch)
    {
       //  Reset view angle and default paramter values for the attractor
       theta = phi = 0;
    }
-   else if (ch == 'm')
+   else if ('m' == ch | 'M' == ch)
    {
       mode = !mode;
    }
@@ -313,7 +318,7 @@ int main(int argc,char* argv[])
    glutInit(&argc, argv);
    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
    glutInitWindowSize(500,500);
-   glutCreateWindow("Ancient Egypt in Technicolor (by Branden Olson)");
+   glutCreateWindow("Ancient Egypt in Technicolor, II (by Branden Olson)");
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
    glutSpecialFunc(special);
