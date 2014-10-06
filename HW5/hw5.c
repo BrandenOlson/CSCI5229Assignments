@@ -94,6 +94,10 @@ static void drawTriangle(double x1, double y1, double z1,
 {
    glPushMatrix();
    glBegin(GL_POLYGON);
+   double nx = (y2 - y1)*(z3 - z1) - (z2 - z1)*(y3 - y1);
+   double ny = (z2 - z1)*(x3 - x1) - (x2 - x1)*(z3 - z1);
+   double nz = (x2 - x1)*(y3 - y1) - (y2 - y1)*(x3 - x1); 
+   glNormal3f(nx, ny, nz);
    glVertex3d(x1, y1, z1);
    glVertex3d(x2, y2, z2);
    glVertex3d(x3, y3, z3);
