@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <math.h>
+
 //  OpenGL with prototypes for glext
 #define GL_GLEXT_PROTOTYPES
 #ifdef __APPLE__
@@ -31,14 +32,15 @@
 int theta = 0;       // Azimuth of view angle
 int phi = 0;         // Elevation of view angle
 int mode = 0;        // Projection mode (0 for orthogonal, 1 for perspective) 
+int move = 1;
 double z = 0;        // Z variable
 double w = 1;        // W variable
-double dim = 60;     // Dimension of orthogonal box
+double dim = 70;     // Dimension of orthogonal box
 int fov = 60;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 // Light values
 int one       =   1;  // Unit value
-int distance  =   60;  // Light distance
+int distance  =   70;  // Light distance
 int inc       =  10;  // Ball increment
 int smooth    =   1;  // Smooth/Flat shading
 int local     =   0;  // Local Viewer Model
@@ -50,7 +52,7 @@ int shininess =   0;  // Shininess (power of two)
 float shinyvec[1];    // Shininess (value)
 int zh        =  90;  // Light azimuth
 float ylight  =   0;  // Elevation of light
-const int light = 1; // Always have light
+int light = 1; // Always have light
 /*
  *  Convenience routine to output raster text
  *  Use VARARGS to make this more flexible
@@ -110,6 +112,8 @@ static void drawSquare(double x1, double z1, double x2, double z2,
 {
    glPushMatrix();
    glBegin(GL_POLYGON);
+   double ny = (z2 - z1)*(x3 - x1) - (x2 - x1)*(z3 - z1);
+   glNormal3f(0, ny, 0);
    glVertex3d(x1, 0, z1);
    glVertex3d(x2, 0, z2);
    glVertex3d(x3, 0, z3);
@@ -349,10 +353,26 @@ void display()
    Print("Z");
    //  Display parameters
    glWindowPos2i(5, 5);
-   Print("View Angle: %d, %d; ", theta, phi);
-   Print("Mode: %s", mode ? "Perspective" : "Orthogonal");
+   Print("Angle=%d,%d  Dim=%.1f FOV=%d Projection=%s Light=%s",
+     theta, phi, dim,fov,mode?"Perpective":"Orthogonal",light?"On":"Off");
+   if (light)
+   {
+      glWindowPos2i(5,45);
+      Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,ylight);
+      glWindowPos2i(5,25);
+      Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.0f",ambient,diffuse,specular,emission,shinyvec[0]);
+   }
    glFlush();
    glutSwapBuffers();
+}
+
+void idle()
+{
+   //  Elapsed time in seconds
+   double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
+   zh = fmod(90*t,360.0);
+   //  Tell GLUT it is necessary to redisplay the scene
+   glutPostRedisplay();
 }
 
 void key(unsigned char ch, int x, int y)
@@ -365,22 +385,64 @@ void key(unsigned char ch, int x, int y)
       //  Reset view angle and default paramter values for the attractor
       theta = phi = 0;
    }
-   else if ('m' == ch || 'M' == ch)
+   else if ('m' == ch)
    {
       mode = !mode;
    }
+   else if ('l' == ch)
+   {
+      light = !light;
+   }
+   else if ('t' == ch) // toggle light movement
+   {
+      move = !move;
+   }
+   else if ('<' == ch)
+   {
+      zh += 1;
+   }
+   else if ('>' == ch)
+   {
+      zh -= 1;
+   }
+   //  Light elevation
+   else if (ch=='[')
+      ylight -= 0.1;
+   else if (ch==']')
+      ylight += 0.1;
+   //  Ambient level
+   else if (ch=='a' && ambient>0)
+      ambient -= 5;
+   else if (ch=='A' && ambient<100)
+      ambient += 5;
+   //  Diffuse level
+   else if (ch=='d' && diffuse>0)
+      diffuse -= 5;
+   else if (ch=='D' && diffuse<100)
+      diffuse += 5;
+   //  Specular level
+   else if (ch=='s' && specular>0)
+      specular -= 5;
+   else if (ch=='S' && specular<100)
+      specular += 5;
+   //  Emission level
+   else if (ch=='e' && emission>0)
+      emission -= 5;
+   else if (ch=='E' && emission<100)
+      emission += 5;
+   //  Shininess level
+   else if (ch=='n' && shininess>-1)
+      shininess -= 1;
+   else if (ch=='N' && shininess<7)
+      shininess += 1;
+   //  Translate shininess power to value (-1 => 0)
+   shinyvec[0] = shininess<0 ? 0 : pow(2.0,shininess);
+
    Project();
+   glutIdleFunc(move? idle : NULL);
    glutPostRedisplay();
 }
 
-void idle()
-{
-   //  Elapsed time in seconds
-   double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-   zh = fmod(90*t,360.0);
-   //  Tell GLUT it is necessary to redisplay the scene
-   glutPostRedisplay();
-}
 
 void special(int key, int x, int y)
 {
