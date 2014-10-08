@@ -385,15 +385,15 @@ void key(unsigned char ch, int x, int y)
       //  Reset view angle and default paramter values for the attractor
       theta = phi = 0;
    }
-   else if ('m' == ch)
+   else if ('m' == ch || 'M' == ch)
    {
       mode = !mode;
    }
-   else if ('l' == ch)
+   else if ('l' == ch || 'L' == ch)
    {
       light = !light;
    }
-   else if ('t' == ch) // toggle light movement
+   else if ('t' == ch || 'T' == ch) // toggle light movement
    {
       move = !move;
    }
@@ -476,7 +476,7 @@ int main(int argc,char* argv[])
    glutInit(&argc, argv);
    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
    glutInitWindowSize(500,500);
-   glutCreateWindow("Ancient Egypt in Technicolor, II (by Branden Olson)");
+   glutCreateWindow("Ancient Egypt in Technicolor, III (by Branden Olson)");
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
    glutSpecialFunc(special);
