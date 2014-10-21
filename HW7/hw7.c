@@ -126,15 +126,15 @@ static void drawCup(double radius, double height,  double x, double y, double z)
    glColor3f(1, 1, 1);
 
    const double R1 = 1.0;
-   const double R2 = 0.95; 
+   const double R2 = 0.97; 
    const double R3 = 0.94; 
-   const double R4 = 0.85;
-   const double R5 = 0.84;
-   const double R6 = 0.80;
-   const double R7 = 0.79;
-   const double R8 = 0.70;
-   const double R9 = 0.69;
-   const double R10 = 0.65;
+   const double R4 = 0.91;
+   const double R5 = 0.88;
+   const double R6 = 0.85;
+   const double R7 = 0.82;
+   const double R8 = 0.79;
+   const double R9 = 0.76;
+   const double R10 = 0.73;
    double ratio_array[] = {R1, R2, R3, R4, R5, R6, R7, R8, R9, R10};
    double height_array[] = {1, 0.9, 0.895, 0.8, 0.795, 0.70, 0.695, 
                             0.30, 0.295, 0}; 
