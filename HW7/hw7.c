@@ -124,22 +124,40 @@ static void drawCup(double radius, double height,  double x, double y, double z)
 
    glColor3f(1, 1, 1);
 
-   const double BT_RATIO = 0.70;
+   const double R1 = 1.0;
+   const double R2 = 0.90; 
+   const double R3 = 0.89; 
+   const double R4 = 0.85;
+   const double R5 = 0.84;
+   const double R6 = 0.80;
+   const double R7 = 0.79;
+   const double R8 = 0.70;
+   const double R9 = 0.69;
+   const double R10 = 0.65;
+   double ratio_array[] = {R1, R2, R3, R4, R5, R6, R7, R8, R9, R10};
+   double height_array[] = {1, 0.9, 0.895, 0.8, 0.795, 0.70, 0.695, 
+                            0.20, 0.195, 0}; 
+   const int RATIO_ARRAY_SIZE = 10;
    const int SIDE_COUNT = 100;
-   glBindTexture(GL_TEXTURE_2D, red);
-   glColor3f(1, 1, 1);
-   glBegin(GL_QUAD_STRIP); 
-   int i = 0;
-   for (; i <= SIDE_COUNT; i++) {     
-       float angle = i*((1.0/SIDE_COUNT) * (2*PI));
-       glTexCoord2f(1-2*(float)i/SIDE_COUNT, 1);
-       glNormal3d( cos(angle), 0, sin(angle) );
-       glVertex3d( 1*cos(angle), 1, 1*sin(angle) );
-       glTexCoord2f(1-2*(float)i/SIDE_COUNT, 0);
-       glVertex3d( BT_RATIO*cos(angle), 0, BT_RATIO*sin(angle) );   }
-   glEnd();
-  
-   
+
+   int j = 0;
+   for(; j <= RATIO_ARRAY_SIZE - 1; j++) {
+      glBindTexture(GL_TEXTURE_2D, red);
+      glColor3f(1, 1, 1);
+      glBegin(GL_QUAD_STRIP);
+      int i = 0;
+      for (; i <= SIDE_COUNT; i++) {     
+          float angle = i*((1.0/SIDE_COUNT) * (2*PI));
+          glTexCoord2f(1-2*(float)i/SIDE_COUNT, 1);
+          glNormal3d( cos(angle), 0, sin(angle) );
+          glVertex3d( ratio_array[j]*cos(angle), height_array[j], 
+                      ratio_array[j]*sin(angle) );
+          glTexCoord2f(1-2*(float)i/SIDE_COUNT, 0);
+          glVertex3d( ratio_array[j+1]*cos(angle), height_array[j+1], 
+                      ratio_array[j+1]*sin(angle) );   
+      }
+      glEnd();
+   }
 
    glPopMatrix();
    glDisable(GL_TEXTURE_2D);
@@ -173,7 +191,7 @@ void display()
       float Specular[]  = {1,1,0,1};
       float white[]     = {1,1,1,1};
       //  Light direction
-      float Position[]  = {5*Cos(zh),0,5*Sin(zh),1};
+      float Position[]  = {5*Cos(zh),1,5*Sin(zh),1};
       //  Draw light position as ball (still no lighting here)
       ball(Position[0],Position[1],Position[2] , 0.1);
       //  Enable lighting with normalization
