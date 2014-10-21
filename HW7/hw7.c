@@ -45,7 +45,7 @@ static void drawCan(double r, double h, double x, double y, double z)
    glScaled(r, h, r);
 
    glBindTexture(GL_TEXTURE_2D, canside);
-   glColor3f(1, 1, 1);
+   glColor3f(0.95, 0.95, 0.95);
    glBegin(GL_QUAD_STRIP); 
    int i = 0;
    int k = 0;
@@ -59,14 +59,15 @@ static void drawCan(double r, double h, double x, double y, double z)
    glEnd();
 
    glBindTexture(GL_TEXTURE_2D, cantop);
-   glNormal3f(0,1,0);
-   glColor3f(1, 1, 1);
+   glColor3f(0.95, 0.95, 0.95);
    glBegin(GL_TRIANGLE_FAN);
    glTexCoord2f(0.5, 0.5);
+   glNormal3f(0, 1, 0);
    glVertex3f(0, 1 ,0);
    for (k=0;k<=360;k+=10)
    {
       glTexCoord2f(0.5*Cos(k) + 0.5, 0.5*Sin(k) + 0.5);
+      glNormal3f(0, 1, 0);
       glVertex3f(Cos(k), 1 , Sin(k));
    }
    glEnd();
@@ -125,8 +126,8 @@ static void drawCup(double radius, double height,  double x, double y, double z)
    glColor3f(1, 1, 1);
 
    const double R1 = 1.0;
-   const double R2 = 0.90; 
-   const double R3 = 0.89; 
+   const double R2 = 0.95; 
+   const double R3 = 0.94; 
    const double R4 = 0.85;
    const double R5 = 0.84;
    const double R6 = 0.80;
@@ -136,14 +137,14 @@ static void drawCup(double radius, double height,  double x, double y, double z)
    const double R10 = 0.65;
    double ratio_array[] = {R1, R2, R3, R4, R5, R6, R7, R8, R9, R10};
    double height_array[] = {1, 0.9, 0.895, 0.8, 0.795, 0.70, 0.695, 
-                            0.20, 0.195, 0}; 
+                            0.30, 0.295, 0}; 
    const int RATIO_ARRAY_SIZE = 10;
    const int SIDE_COUNT = 100;
 
    int j = 0;
-   for(; j <= RATIO_ARRAY_SIZE - 1; j++) {
+   for(; j < RATIO_ARRAY_SIZE - 1; j++) {
       glBindTexture(GL_TEXTURE_2D, red);
-      glColor3f(1, 1, 1);
+      glColor3f(1, 0, 0);
       glBegin(GL_QUAD_STRIP);
       int i = 0;
       for (; i <= SIDE_COUNT; i++) {     
