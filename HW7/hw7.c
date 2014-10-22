@@ -37,7 +37,7 @@ static void ball(double x,double y,double z,double r)
 static void drawCan(double r, double h, double x, double y, double z)
 {
    glEnable(GL_TEXTURE_2D);
-   // glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
    const int SIDE_COUNT = 100;
    glPushMatrix();
 
@@ -45,7 +45,7 @@ static void drawCan(double r, double h, double x, double y, double z)
    glScaled(r, h, r);
 
    glBindTexture(GL_TEXTURE_2D, canside);
-   glColor3f(0.95, 0.95, 0.95);
+   glColor3f(1, 1, 1);
    glBegin(GL_QUAD_STRIP); 
    int i = 0;
    int k = 0;
@@ -71,9 +71,21 @@ static void drawCan(double r, double h, double x, double y, double z)
       glVertex3f(Cos(k), 1 , Sin(k));
    }
    glEnd();
+   glDisable(GL_TEXTURE_2D);
+
+   glColor3f(0.7, 0.7, 0.7);
+   glNormal3f(0, -1, 0);
+   glBegin(GL_TRIANGLE_FAN);
+   glVertex3f(0, 0, 0);
+   int q;
+   for(q = 0; q <= 360; q += 10)
+   {
+      glVertex3f(Cos(q), 0, Sin(q));
+   }
+   glEnd();
+   
 
    glPopMatrix();
-   glDisable(GL_TEXTURE_2D);
 }
 
 /* Draw a torus */
@@ -116,14 +128,12 @@ void drawTorus(double xVal, double yVal, double zVal, double rbig,
 // top's radius
 static void drawCup(double radius, double height,  double x, double y, double z)
 {
-   glEnable(GL_TEXTURE_2D);
+   glColor3f(1, 1, 1);
+   drawTorus(x, height, z, radius, radius/15);
    glPushMatrix();
-   drawTorus(x, height, z, radius, radius/30);
 
    glTranslated(x, y, z);
    glScaled(radius, height, radius);
-
-   glColor3f(1, 1, 1);
 
    const double R1 = 1.0;
    const double R2 = 0.97; 
@@ -132,15 +142,42 @@ static void drawCup(double radius, double height,  double x, double y, double z)
    const double R5 = 0.88;
    const double R6 = 0.85;
    const double R7 = 0.82;
-   const double R8 = 0.79;
-   const double R9 = 0.76;
-   const double R10 = 0.73;
+   const double R8 = 0.76;
+   const double R9 = 0.73;
+   const double R10 = 0.70;
+   const double BOTTOM_RATIO = R10 + 0.005;
    double ratio_array[] = {R1, R2, R3, R4, R5, R6, R7, R8, R9, R10};
    double height_array[] = {1, 0.9, 0.895, 0.8, 0.795, 0.70, 0.695, 
-                            0.30, 0.295, 0}; 
+                            0.30, 0.295, 0.0}; 
    const int RATIO_ARRAY_SIZE = 10;
    const int SIDE_COUNT = 100;
+   const double RIM_RADIUS = 1-radius/15;
 
+   // Draw interior of cup
+   int k = 0;
+   for(; k < RATIO_ARRAY_SIZE - 1; k++) {
+  //    glColor3f(1, 1, 1);
+      glBegin(GL_QUAD_STRIP);
+      int m = 0;
+      for (; m <= SIDE_COUNT; m++) {     
+          float angle = m*((1.0/SIDE_COUNT) * (2*PI));
+          glNormal3d( -cos(angle), 0, -sin(angle) );
+          glColor3f(1, 1, 1);
+          glVertex3d( RIM_RADIUS*ratio_array[k]*cos(angle), height_array[k], 
+                      RIM_RADIUS*ratio_array[k]*sin(angle) );
+          double depth = (k == RATIO_ARRAY_SIZE - 2) ? 0.05 : 
+                               height_array[k+1];
+          glVertex3d( RIM_RADIUS*ratio_array[k+1]*cos(angle), 
+                      depth, 
+                      RIM_RADIUS*ratio_array[k+1]*sin(angle) );   
+      }
+      glEnd();
+   }
+
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+   // Draw exterior of cup
    int j = 0;
    for(; j < RATIO_ARRAY_SIZE - 1; j++) {
       glBindTexture(GL_TEXTURE_2D, red);
@@ -159,9 +196,36 @@ static void drawCup(double radius, double height,  double x, double y, double z)
       }
       glEnd();
    }
+   glDisable(GL_TEXTURE_2D);
+
+   // Draw bottom of cup
+   int p;
+   glColor3f(1, 1, 1);
+   for(p = 1; p >= -1; p -= 2)
+   {
+      double depth = 0;
+      if(p > 0)
+      {
+         glColor3f(1, 1, 1);
+         depth = 0.05; 
+      }
+      else
+      {
+         glColor3f(1, 0, 0);
+      }
+      glNormal3f(0, p, 0);
+      glBegin(GL_TRIANGLE_FAN);
+      glVertex3f(0, 0, 0);
+      int q;
+      for(q = 0; q <= 360; q += 10)
+      {
+         glVertex3f(BOTTOM_RATIO*p*Cos(q), 
+                    depth, BOTTOM_RATIO*p*Sin(q));
+      }
+      glEnd();
+   }
 
    glPopMatrix();
-   glDisable(GL_TEXTURE_2D);
 }
 
 
@@ -213,8 +277,10 @@ void display()
    else
       glDisable(GL_LIGHTING);
 
-   drawCan(0.5, 2, -1, -1, 0);
-   drawCup(0.7, 2.1, 1, -1, 1);
+   drawCan(0.5, 2, 0, -1, 1);
+   drawCup(0.7, 2.1, 2, -1, -1);
+   drawCup(0.7, 2.1, 0, -1, -2);
+   drawCup(0.7, 2.1, -2, -1, -1);
 
    //  Draw axes
    glDisable(GL_LIGHTING);
