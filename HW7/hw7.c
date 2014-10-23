@@ -21,7 +21,7 @@ unsigned int canside, cantop, red;  //  Textures
  *     at (x,y,z)
  *     radius r
  */
-static void drawSphere(double x,double y,double z,double r)
+static void drawSphere(double x, double y, double z, double r)
 {
    //  Save transformation
    glPushMatrix();
@@ -29,8 +29,8 @@ static void drawSphere(double x,double y,double z,double r)
    glTranslated(x,y,z);
    glScaled(r,r,r);
    //  White ball
-   glColor3f(1,1,1);
-   glutSolidSphere(1.0,16,16);
+   glColor3f(1, 1, 1);
+   glutSolidSphere(1.0, 16, 16);
    //  Undo transofrmations
    glPopMatrix();
 }
@@ -52,10 +52,10 @@ static void drawCan(double r, double h, double x, double y, double z)
    int k = 0;
    for (; i <= SIDE_COUNT; i++) {     
        float angle = i*((1.0/SIDE_COUNT) * (2*PI));
-       glTexCoord2f(1-2*(float)i/SIDE_COUNT, 1);
+       glTexCoord2f(1 - 2*(float)i/SIDE_COUNT, 1);
        glNormal3d( cos(angle), 0, sin(angle) );
        glVertex3d( 1*cos(angle), 1, 1*sin(angle) );
-       glTexCoord2f(1-2*(float)i/SIDE_COUNT, 0);
+       glTexCoord2f(1 - 2*(float)i/SIDE_COUNT, 0);
        glVertex3d( 1*cos(angle), 0, 1*sin(angle) );   }
    glEnd();
 
@@ -64,12 +64,12 @@ static void drawCan(double r, double h, double x, double y, double z)
    glBegin(GL_TRIANGLE_FAN);
    glTexCoord2f(0.5, 0.5);
    glNormal3f(0, 1, 0);
-   glVertex3f(0, 1 ,0);
-   for (k=0;k<=360;k+=10)
+   glVertex3f(0, 1, 0);
+   for (k = 0; k <= 360; k += 10)
    {
       glTexCoord2f(0.5*Cos(k) + 0.5, 0.5*Sin(k) + 0.5);
       glNormal3f(0, 1, 0);
-      glVertex3f(Cos(k), 1 , Sin(k));
+      glVertex3f(Cos(k), 1, Sin(k));
    }
    glEnd();
    glDisable(GL_TEXTURE_2D);
@@ -127,7 +127,7 @@ void drawTorus(double xVal, double yVal, double zVal, double rbig,
 
 // radius = radius of the top of cup. The bottom's radius is computed from the
 // top's radius
-static void drawCup(double radius, double height,  double x, double y, double z)
+static void drawCup(double radius, double height,  double x, double y,                     double z)
 {
    glColor3f(1, 1, 1);
    drawTorus(x, height, z, radius, radius/15);
@@ -152,7 +152,7 @@ static void drawCup(double radius, double height,  double x, double y, double z)
                             0.30, 0.295, 0.0}; 
    const int RATIO_ARRAY_SIZE = 10;
    const int SIDE_COUNT = 100;
-   const double RIM_RADIUS = 1-radius/15;
+   const double RIM_RADIUS = 1 - radius/15;
 
    // Draw interior of cup
    int k = 0;
@@ -247,33 +247,33 @@ void display()
    //  Undo previous transformations
    glLoadIdentity();
    //  Perspective - set eye position
-   gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+   gluLookAt(Ex, Ey, Ez, 0, 0, 0, 0, Cos(ph), 0);
    //  Light switch
    if (light)
    {
       //  Translate intensity to color vectors
-      float Ambient[] = {0.3,0.3,0.3,1.0};
-      float Diffuse[] = {1,1,1,1};
-      float Specular[] = {1,1,0,1};
-      float white[] = {1,1,1,1};
+      float Ambient[] = {0.3, 0.3, 0.3, 1.0};
+      float Diffuse[] = {1, 1, 1, 1};
+      float Specular[] = {1, 1, 0, 1};
+      float white[] = {1, 1, 1, 1};
       //  Light direction
-      float Position[] = {5*Cos(zh),1,5*Sin(zh),1};
+      float Position[] = {5*Cos(zh), 1, 5*Sin(zh), 1};
       //  Draw light position as ball (still no lighting here)
-      drawSphere(Position[0],Position[1],Position[2] , 0.1);
+      drawSphere(Position[0], Position[1], Position[2], 0.1);
       //  Enable lighting with normalization
       glEnable(GL_LIGHTING);
       glEnable(GL_NORMALIZE);
       //  glColor sets ambient and diffuse color materials
-      glColorMaterial(GL_FRONT_AND_BACK,GL_AMBIENT_AND_DIFFUSE);
+      glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
       glEnable(GL_COLOR_MATERIAL);
       //  Enable light 0
       glEnable(GL_LIGHT0);
-      glLightfv(GL_LIGHT0,GL_AMBIENT ,Ambient);
-      glLightfv(GL_LIGHT0,GL_DIFFUSE ,Diffuse);
-      glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
-      glLightfv(GL_LIGHT0,GL_POSITION,Position);
-      glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,32.0f);
-      glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+      glLightfv(GL_LIGHT0, GL_AMBIENT, Ambient);
+      glLightfv(GL_LIGHT0, GL_DIFFUSE, Diffuse);
+      glLightfv(GL_LIGHT0, GL_SPECULAR, Specular);
+      glLightfv(GL_LIGHT0, GL_POSITION, Position);
+      glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
+      glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
    }
    else
       glDisable(GL_LIGHTING);
@@ -305,8 +305,9 @@ void display()
       Print("Z");
    }
    //  Display parameters
-   glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Dim=%.1f Light=%s",th,ph,dim,light?"On":"Off");
+   glWindowPos2i(5, 5);
+   Print("Angle=%d,%d  Dim=%.1f Light=%s", th, ph, dim, light? "On" :
+         "Off");
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
@@ -316,7 +317,7 @@ void display()
 /*
  *  GLUT calls this routine when an arrow key is pressed
  */
-void special(int key,int x,int y)
+void special(int key, int x, int y)
 {
    //  Right arrow key - increase angle by 5 degrees
    if (key == GLUT_KEY_RIGHT)
