@@ -5,14 +5,15 @@
 
 #define PI 3.1415927
 #include "CSCIx229.h"
-int axes=0;       //  Display axes
-int th=0;         //  Azimuth of view angle
-int ph=0;         //  Elevation of view angle
-int zh=0;         //  Azimuth of light
-int fov=55;       //  Field of view (for perspective)
-double asp=1;     //  Aspect ratio
-double dim=3.0;   //  Size of world
-int    light=1;    //  Lighting
+
+int axes = 0;       //  Display axes
+int th = 0;         //  Azimuth of view angle
+int ph = 0;         //  Elevation of view angle
+int zh= 0;         //  Azimuth of light
+int fov = 55;       //  Field of view (for perspective)
+double asp = 1;     //  Aspect ratio
+double dim = 3.0;   //  Size of world
+int light = 1;    //  Lighting
 unsigned int canside, cantop, red;  //  Textures
 
 /*
@@ -20,7 +21,7 @@ unsigned int canside, cantop, red;  //  Textures
  *     at (x,y,z)
  *     radius r
  */
-static void ball(double x,double y,double z,double r)
+static void drawSphere(double x,double y,double z,double r)
 {
    //  Save transformation
    glPushMatrix();
@@ -156,14 +157,14 @@ static void drawCup(double radius, double height,  double x, double y, double z)
    // Draw interior of cup
    int k = 0;
    for(; k < RATIO_ARRAY_SIZE - 1; k++) {
-  //    glColor3f(1, 1, 1);
       glBegin(GL_QUAD_STRIP);
       int m = 0;
       for (; m <= SIDE_COUNT; m++) {     
           float angle = m*((1.0/SIDE_COUNT) * (2*PI));
           glNormal3d( -cos(angle), 0, -sin(angle) );
           glColor3f(1, 1, 1);
-          glVertex3d( RIM_RADIUS*ratio_array[k]*cos(angle), height_array[k], 
+          glVertex3d( RIM_RADIUS*ratio_array[k]*cos(angle), 
+                      height_array[k], 
                       RIM_RADIUS*ratio_array[k]*sin(angle) );
           double depth = (k == RATIO_ARRAY_SIZE - 2) ? 0.05 : 
                                height_array[k+1];
@@ -234,7 +235,7 @@ static void drawCup(double radius, double height,  double x, double y, double z)
  */
 void display()
 {
-   const double len=2.5;  //  Length of axes
+   const double len = 2.5;  //  Length of axes
    double Ex = -2*dim*Sin(th)*Cos(ph);
    double Ey = +2*dim        *Sin(ph);
    double Ez = +2*dim*Cos(th)*Cos(ph);
@@ -251,14 +252,14 @@ void display()
    if (light)
    {
       //  Translate intensity to color vectors
-      float Ambient[]   = {0.3,0.3,0.3,1.0};
-      float Diffuse[]   = {1,1,1,1};
-      float Specular[]  = {1,1,0,1};
-      float white[]     = {1,1,1,1};
+      float Ambient[] = {0.3,0.3,0.3,1.0};
+      float Diffuse[] = {1,1,1,1};
+      float Specular[] = {1,1,0,1};
+      float white[] = {1,1,1,1};
       //  Light direction
-      float Position[]  = {5*Cos(zh),1,5*Sin(zh),1};
+      float Position[] = {5*Cos(zh),1,5*Sin(zh),1};
       //  Draw light position as ball (still no lighting here)
-      ball(Position[0],Position[1],Position[2] , 0.1);
+      drawSphere(Position[0],Position[1],Position[2] , 0.1);
       //  Enable lighting with normalization
       glEnable(GL_LIGHTING);
       glEnable(GL_NORMALIZE);
@@ -284,23 +285,23 @@ void display()
 
    //  Draw axes
    glDisable(GL_LIGHTING);
-   glColor3f(1,1,1);
+   glColor3f(1, 1, 1);
    if (axes)
    {
       glBegin(GL_LINES);
-      glVertex3d(0.0,0.0,0.0);
-      glVertex3d(len,0.0,0.0);
-      glVertex3d(0.0,0.0,0.0);
-      glVertex3d(0.0,len,0.0);
-      glVertex3d(0.0,0.0,0.0);
-      glVertex3d(0.0,0.0,len);
+      glVertex3d(0.0, 0.0, 0.0);
+      glVertex3d(len, 0.0, 0.0);
+      glVertex3d(0.0, 0.0, 0.0);
+      glVertex3d(0.0, len, 0.0);
+      glVertex3d(0.0, 0.0, 0.0);
+      glVertex3d(0.0, 0.0, len);
       glEnd();
       //  Label axes
-      glRasterPos3d(len,0.0,0.0);
+      glRasterPos3d(len, 0.0, 0.0);
       Print("X");
-      glRasterPos3d(0.0,len,0.0);
+      glRasterPos3d(0.0, len, 0.0);
       Print("Y");
-      glRasterPos3d(0.0,0.0,len);
+      glRasterPos3d(0.0, 0.0, len);
       Print("Z");
    }
    //  Display parameters
@@ -333,7 +334,7 @@ void special(int key,int x,int y)
    th %= 360;
    ph %= 360;
    //  Update projection
-   Project(fov,asp,dim);
+   Project(fov, asp, dim);
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -341,7 +342,7 @@ void special(int key,int x,int y)
 /*
  *  GLUT calls this routine when a key is pressed
  */
-void key(unsigned char ch,int x,int y)
+void key(unsigned char ch, int x, int y)
 {
    //  Exit on ESC
    if (ch == 27)
@@ -351,16 +352,16 @@ void key(unsigned char ch,int x,int y)
       th = ph = 0;
    //  Toggle axes
    else if (ch == 'a' || ch == 'A')
-      axes = 1-axes;
+      axes = 1 - axes;
    //  Toggle light
    else if (ch == 'l' || ch == 'L')
-      light = 1-light;
+      light = 1 - light;
    else if (ch == '-')
       dim += 0.1;
    else if (ch == '+')
       dim -= 0.1;
    //  Reproject
-   Project(fov,asp,dim);
+   Project(fov, asp, dim);
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -368,14 +369,14 @@ void key(unsigned char ch,int x,int y)
 /*
  *  GLUT calls this routine when the window is resized
  */
-void reshape(int width,int height)
+void reshape(int width, int height)
 {
    //  Ratio of the width to the height of the window
-   asp = (height>0) ? (double)width/height : 1;
+   asp = (height > 0) ? (double)width/height : 1;
    //  Set the viewport to the entire window
-   glViewport(0,0, width,height);
+   glViewport(0, 0, width, height);
    //  Set projection
-   Project(fov,asp,dim);
+   Project(fov, asp, dim);
 }
 
 /*
@@ -385,7 +386,7 @@ void idle()
 {
    //  Elapsed time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-   zh = fmod(90*t,360.0);
+   zh = fmod(90*t, 360.0);
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -393,13 +394,13 @@ void idle()
 /*
  *  Start up GLUT and tell it what to do
  */
-int main(int argc,char* argv[])
+int main(int argc, char* argv[])
 {
    //  Initialize GLUT
-   glutInit(&argc,argv);
+   glutInit(&argc, argv);
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-   glutInitWindowSize(600,600);
+   glutInitWindowSize(600, 600);
    glutCreateWindow("Party Time! (By Branden Olson)");
    //  Set callbacks
    glutDisplayFunc(display);
