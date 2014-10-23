@@ -59,7 +59,7 @@ static void drawCan(double r, double h, double x, double y, double z)
    glEnd();
 
    glBindTexture(GL_TEXTURE_2D, cantop);
-   glColor3f(0.95, 0.95, 0.95);
+   glColor3f(1, 1, 1);
    glBegin(GL_TRIANGLE_FAN);
    glTexCoord2f(0.5, 0.5);
    glNormal3f(0, 1, 0);
