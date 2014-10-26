@@ -1,0 +1,52 @@
+Beer Pong Game
+==============
+
+I plan to create an OpenGL program that simulates a basic game of beer pong.
+At the most basic level, the user acts as a player who tries to shoot a ball
+into one of 10 cups organized like bowling pins as such:
+
+-----------
+| O O O O |
+|  O O O  |
+|   O O   |
+|    O    |
+|         | 
+|         | 
+|         | 
+|         | 
+|         | 
+|         | 
+-----------
+   player
+
+The inspiration for the game is that it will incorporate most of the concepts
+we will have learned in the course into a simple-to-play game which would be
+fun for the user. Furthermore, the project will allow for iterative
+improvement as I realize exactly how feasible my ideas are.
+
+There are only three base objects I will need to create: the table, the board,
+and the cups. I can create all of these manually (the ball is already 
+implemented from previous assignments). Furthermore, I can add textures
+to the cups to make them look "bumpy" (like the classic Red Solo Cup(TM)) and
+to the table (e.g., a wooden texture). Lighting should be straightforward and
+useful to the user. The scene will obviously boast a perspective projection as
+this is realistically how the game is played. 
+
+For now, I'm thinking that the user has a fixed number of "lives" with which
+they can try to make the ball into a cup. As long as they keep making the shots,
+their lives will not go down. The user will click on the screen to shoot the
+ball (unless I come up with a better solution for shooting).
+
+I believe this project should be challenging enough as a grad student. In 
+particular, I will need to get the physics to work correctly which I'm not
+sure will be addressed in the course. I will need to implement some collision 
+detection to determine if the ball actually enters the cup instead of just
+hitting the cup's rim.
+
+As for "stretch goals", there are several I have considered. I can create a 
+"party scene" in the background which might liven up the feel. I can add the
+ability to bounce off the table for a trick shot. I can allow the user to move
+left and right to get a new angle for their shot. Perhaps I can prompt the user
+to choose a "difficulty" which would alter how many lives they have. I can 
+also try to make as legitimate of a gaming UI as possible (with the lives and
+other stats displayed on the side, etc.)
