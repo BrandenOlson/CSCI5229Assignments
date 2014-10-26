@@ -1,0 +1,3 @@
+I believe I spent between 10 and 15 hours for this assignment. This is
+mainly because I redrew a new scene and had to get lighting,
+projections, and textures working.
