@@ -281,9 +281,9 @@ void display()
    else
       glDisable(GL_LIGHTING);
 
-   // drawCan(0.5, 2, 0, -1, 1);
+   drawCan(0.5, 2, 0, -1, 1);
 
-   const double Z0 = -1;
+   const double Z0 = -3;
    drawCup(CUP_RADIUS, CUP_HEIGHT, 0, -1, Z0);
    drawCup(CUP_RADIUS, CUP_HEIGHT, -R, -1, Z0 - R*sqrt(3));
    drawCup(CUP_RADIUS, CUP_HEIGHT, R, -1, Z0 - R*sqrt(3));

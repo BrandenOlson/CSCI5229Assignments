@@ -352,11 +352,6 @@ void key(unsigned char ch, int x, int y)
    else if (ch == '0')
       th = ph = 0;
    //  Toggle axes
-   else if (ch == 'a' || ch == 'A')
-      axes = 1 - axes;
-   //  Toggle light
-   else if (ch == 'l' || ch == 'L')
-      light = 1 - light;
    else if (ch == '-')
       dim += 0.1;
    else if (ch == '+')
