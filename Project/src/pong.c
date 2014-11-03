@@ -8,13 +8,23 @@
 
 int axes = 1;       //  Display axes
 int th = 0;         //  Azimuth of view angle
-int ph = 0;         //  Elevation of view angle
+int ph = 25;         //  Elevation of view angle
 int zh= 0;         //  Azimuth of light
 int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
-double dim = 3.0;   //  Size of world
+double dim = 8.0;   //  Size of world
 int light = 1;    //  Lighting
-unsigned int canside, cantop, red;  //  Textures
+unsigned int canside, cantop, red, wood;  //  Textures
+
+// Light values
+int emission  =   0;  // Emission intensity (%)
+int ambient   =  30;  // Ambient intensity (%)
+int diffuse   = 100;  // Diffuse intensity (%)
+int specular  =   0;  // Specular intensity (%)
+int shininess =   0;  // Shininess (power of two)
+float shinyvec[1];    // Shininess (value)
+float ylight  =   0;  // Elevation of light
+
 
 /*
  *  Draw a ball
@@ -229,6 +239,89 @@ static void drawCup(double radius, double height,  double x, double y,          
    glPopMatrix();
 }
 
+static void cube(double x,double y,double z,
+                 double dx,double dy,double dz)
+{
+   //  Set specular color to white
+   float white[] = {1,1,1,1};
+   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SHININESS,shinyvec);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glScaled(dx,dy,dz);
+   //  Enable textures
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+   glColor3f(1,1,1);
+   glBindTexture(GL_TEXTURE_2D,wood);
+   //  Front
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1, 1);
+   glEnd();
+   //  Back
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,-1);
+   glEnd();
+   //  Right
+   glBegin(GL_QUADS);
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(+1,-1,+1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,+1);
+   glEnd();
+   //  Left
+   glBegin(GL_QUADS);
+   glNormal3f(-1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
+   glEnd();
+   //  Top
+   glBegin(GL_QUADS);
+   glNormal3f( 0,+1, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+   glTexCoord2f(1,0); glVertex3f(+1,+1,+1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
+   glEnd();
+   //  Bottom
+   glBegin(GL_QUADS);
+   glNormal3f( 0,-1, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,-1,+1);
+   glEnd();
+   //  Undo transformations and textures
+   glPopMatrix();
+   glDisable(GL_TEXTURE_2D);
+}
+
+void drawTable(double length, double width, double height, double x,
+               double y, double z)
+{
+   glPushMatrix();
+
+   glTranslated(x, y, z);
+   glScaled(width, height, length);
+   glEnable(GL_TEXTURE_2D);
+   glDisable(GL_TEXTURE_2D);   
+   glPopMatrix();
+}
 
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
@@ -281,16 +374,21 @@ void display()
    else
       glDisable(GL_LIGHTING);
 
-   drawCan(0.5, 2, 0, -1, 1);
+   const double Z0 = -6;
 
-   const double Z0 = -3;
+   drawCan(0.5, 2, 0, -1, 1);
+   cube(0, -2, 0, 7*CUP_RADIUS, 1, Z0 - 3.5*R*sqrt(3));
+
    drawCup(CUP_RADIUS, CUP_HEIGHT, 0, -1, Z0);
    drawCup(CUP_RADIUS, CUP_HEIGHT, -R, -1, Z0 - R*sqrt(3));
    drawCup(CUP_RADIUS, CUP_HEIGHT, R, -1, Z0 - R*sqrt(3));
    drawCup(CUP_RADIUS, CUP_HEIGHT, 0, -1, Z0 - 2*R*sqrt(3));
    drawCup(CUP_RADIUS, CUP_HEIGHT, -2*R, -1, Z0 - 2*R*sqrt(3));
    drawCup(CUP_RADIUS, CUP_HEIGHT, +2*R, -1, Z0 - 2*R*sqrt(3));
-    
+   drawCup(CUP_RADIUS, CUP_HEIGHT, -R, -1, Z0 - 3*R*sqrt(3));
+   drawCup(CUP_RADIUS, CUP_HEIGHT, +R, -1, Z0 - 3*R*sqrt(3));
+   drawCup(CUP_RADIUS, CUP_HEIGHT, -3*R, -1, Z0 - 3*R*sqrt(3));
+   drawCup(CUP_RADIUS, CUP_HEIGHT, +3*R, -1, Z0 - 3*R*sqrt(3));
 
    //  Draw axes
    glDisable(GL_LIGHTING);
@@ -359,7 +457,10 @@ void key(unsigned char ch, int x, int y)
       exit(0);
    //  Reset view angle
    else if (ch == '0')
-      th = ph = 0;
+   {
+      th = 0;
+      ph = 25;
+   }
    else if (ch == '-')
       dim += 0.1;
    else if (ch == '+')
@@ -416,6 +517,7 @@ int main(int argc, char* argv[])
    red = LoadTexBMP("red.bmp");
    canside = LoadTexBMP("can2.bmp");
    cantop = LoadTexBMP("beercan.bmp");
+   wood = LoadTexBMP("wood.bmp");
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();
