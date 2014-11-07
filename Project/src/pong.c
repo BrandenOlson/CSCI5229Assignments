@@ -12,18 +12,18 @@ int ph = 25;         //  Elevation of view angle
 int zh= 0;         //  Azimuth of light
 int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
-double dim = 8.0;   //  Size of world
+double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
 unsigned int canside, cantop, red, wood;  //  Textures
 
 // Light values
 int emission  =   0;  // Emission intensity (%)
 int ambient   =  30;  // Ambient intensity (%)
-int diffuse   = 100;  // Diffuse intensity (%)
-int specular  =   0;  // Specular intensity (%)
-int shininess =   0;  // Shininess (power of two)
+int diffuse   = 0;  // Diffuse intensity (%)
+int specular  =   100;  // Specular intensity (%)
+int shininess =   64;  // Shininess (power of two)
 float shinyvec[1];    // Shininess (value)
-float ylight  =   0;  // Elevation of light
+double ylight  =  5;  // Elevation of light
 
 
 /*
@@ -239,7 +239,7 @@ static void drawCup(double radius, double height,  double x, double y,          
    glPopMatrix();
 }
 
-static void cube(double x,double y,double z,
+static void drawTable(double x,double y,double z,
                  double dx,double dy,double dz)
 {
    //  Set specular color to white
@@ -311,17 +311,6 @@ static void cube(double x,double y,double z,
    glDisable(GL_TEXTURE_2D);
 }
 
-void drawTable(double length, double width, double height, double x,
-               double y, double z)
-{
-   glPushMatrix();
-
-   glTranslated(x, y, z);
-   glScaled(width, height, length);
-   glEnable(GL_TEXTURE_2D);
-   glDisable(GL_TEXTURE_2D);   
-   glPopMatrix();
-}
 
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
@@ -353,7 +342,7 @@ void display()
       float Specular[] = {1, 1, 0, 1};
       float white[] = {1, 1, 1, 1};
       //  Light direction
-      float Position[] = {5*Cos(zh), 1, 5*Sin(zh), 1};
+      float Position[] = {dim*Cos(zh), ylight, dim*Sin(zh), 1};
       //  Draw light position as ball (still no lighting here)
       drawSphere(Position[0], Position[1], Position[2], 0.1);
       //  Enable lighting with normalization
@@ -376,8 +365,12 @@ void display()
 
    const double Z0 = -6;
 
-   drawCan(0.5, 2, 0, -1, 1);
-   cube(0, -2, 0, 7*CUP_RADIUS, 1, Z0 - 3.5*R*sqrt(3));
+   drawTable(0, -2, 0, 7*CUP_RADIUS, 1, Z0 - 3.5*R*sqrt(3));
+
+   drawCan(0.5, 2, 6*CUP_RADIUS, -1, -Z0 - sqrt(3));
+   drawCan(0.5, 2, -6*CUP_RADIUS, -1, -Z0 - sqrt(3));
+   drawCan(0.5, 2, 6*CUP_RADIUS, -1, Z0 + sqrt(3));
+   drawCan(0.5, 2, -6*CUP_RADIUS, -1, Z0 + sqrt(3));
 
    drawCup(CUP_RADIUS, CUP_HEIGHT, 0, -1, Z0);
    drawCup(CUP_RADIUS, CUP_HEIGHT, -R, -1, Z0 - R*sqrt(3));
@@ -514,10 +507,10 @@ int main(int argc, char* argv[])
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
    //  Load textures
-   red = LoadTexBMP("red.bmp");
-   canside = LoadTexBMP("can2.bmp");
-   cantop = LoadTexBMP("beercan.bmp");
-   wood = LoadTexBMP("wood.bmp");
+   red = LoadTexBMP("images/red.bmp");
+   canside = LoadTexBMP("images/can2.bmp");
+   cantop = LoadTexBMP("images/beercan.bmp");
+   wood = LoadTexBMP("images/wood.bmp");
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();
