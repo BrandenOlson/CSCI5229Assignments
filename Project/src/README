@@ -1,9 +1,9 @@
-HW7: Party Time (by Branden Olson)
-==================================
+OpenPong (by Branden Olson)
+===========================
 
 Author: Branden Olson  
 Email: branden.olson@colorado.edu
-Source file: hw7.c
+Source file: pong.c
 
 Description
 -----------
@@ -13,7 +13,7 @@ Ribbon surrounded by several bumpy-textured Red Solo Cups.
 Key Bindings
 ------------
 * ESC     -> Exits the program
-* 0       -> Resets the angle to default: (th, ph) = (0, 0)
+* 0       -> Resets the angle to default: (th, ph) = (0, 25)
 * '-'     -> Decreases dimension which causes a zoom-in effect
 * '+'     -> Increases dimension which causes a zoom-out effect
 * 'a'/'A' -> Toggles axes
