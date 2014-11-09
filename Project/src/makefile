@@ -31,10 +31,14 @@ print.o: print.c CSCIx229.h
 project.o: project.c CSCIx229.h
 errcheck.o: errcheck.c CSCIx229.h
 object.o: object.c CSCIx229.h
+materials.o: materials.c OlsonLib.h
 
 #  Create archive
 CSCIx229.a:fatal.o loadtexbmp.o print.o project.o errcheck.o object.o
 	ar -rcs $@ $^
+OlsonLib.a:materials.o
+	ar -rcs $@ $^
+
 
 # Compile rules
 .c.o:
@@ -43,7 +47,7 @@ CSCIx229.a:fatal.o loadtexbmp.o print.o project.o errcheck.o object.o
 	g++ -c $(CFLG) $<
 
 #  Link
-pong:pong.o CSCIx229.a
+pong:pong.o CSCIx229.a OlsonLib.a
 	gcc -O3 -o $@ $^   $(LIBS)
 
 #  Clean
