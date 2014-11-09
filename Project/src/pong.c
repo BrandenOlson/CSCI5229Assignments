@@ -1,15 +1,17 @@
-/* HW7: Textures
+/* OpenPong 
    by Branden Olson
 */
 
 
 #define PI 3.1415927
 #include "CSCIx229.h"
+#include "OlsonLib.h"
 
-int axes = 1;       //  Display axes
+int axes = 0;       //  Display axes
 int th = 0;         //  Azimuth of view angle
 int ph = 25;         //  Elevation of view angle
 int zh= 0;         //  Azimuth of light
+double ylight  =  5;  // Elevation of light
 int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
@@ -20,11 +22,30 @@ unsigned int canside, cantop, red, wood;  //  Textures
 int emission  =   0;  // Emission intensity (%)
 int ambient   =  30;  // Ambient intensity (%)
 int diffuse   = 0;  // Diffuse intensity (%)
-int specular  =   100;  // Specular intensity (%)
-int shininess =   64;  // Shininess (power of two)
+int specular  =   0;  // Specular intensity (%)
+int shininess =   0;  // Shininess (power of two)
 float shinyvec[1];    // Shininess (value)
-double ylight  =  5;  // Elevation of light
 
+const double Z0 = -6;
+
+double GRAVITY = -0.5;
+
+typedef struct ball {
+   float x;
+   float y;
+   float z; // Positions
+   float vx; float vy; float vz; // Velocities
+} ball;
+
+ball pBall;
+
+materialStruct metal =
+{
+   {0.33, 0.22, 0.03, 1.0},
+   {0.78, 0.57, 0.11, 1.0},
+   {0.99, 0.91, 0.81, 1.0},
+   27.8
+};
 
 /*
  *  Draw a ball
@@ -39,7 +60,6 @@ static void drawSphere(double x, double y, double z, double r)
    glTranslated(x,y,z);
    glScaled(r,r,r);
    //  White ball
-   glColor3f(1, 1, 1);
    glutSolidSphere(1.0, 16, 16);
    //  Undo transofrmations
    glPopMatrix();
@@ -49,6 +69,7 @@ static void drawCan(double r, double h, double x, double y, double z)
 {
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+   materials(&metal);
    const int SIDE_COUNT = 100;
    glPushMatrix();
 
@@ -135,8 +156,8 @@ void drawTorus(double xVal, double yVal, double zVal, double rbig,
    glPopMatrix();
 }
 
-// radius = radius of the top of cup. The bottom's radius is computed from the
-// top's radius
+// radius = radius of the top of cup 
+// The bottom's radius is computed from the top's radius
 static void drawCup(double radius, double height,  double x, double y,                     double z)
 {
    glColor3f(1, 1, 1);
@@ -243,11 +264,11 @@ static void drawTable(double x,double y,double z,
                  double dx,double dy,double dz)
 {
    //  Set specular color to white
-   float white[] = {1,1,1,1};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
-   glMaterialfv(GL_FRONT_AND_BACK,GL_SHININESS,shinyvec);
-   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
-   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
+   //float white[] = {1,1,1,1};
+   //float Emission[]  = {0.0,0.0,0.01*emission,1.0};
+   //glMaterialfv(GL_FRONT_AND_BACK,GL_SHININESS,shinyvec);
+   //glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
+   //glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
    //  Save transformation
    glPushMatrix();
    //  Offset, scale and rotate
@@ -319,6 +340,7 @@ void display()
 {
    const double len = 2.5;  //  Length of axes
    const double CUP_RADIUS = 0.7; 
+   const double BALL_RADIUS = CUP_RADIUS/2;
    const double R = CUP_RADIUS + CUP_RADIUS/15/2;
    const double CUP_HEIGHT = 2.1;
    double Ex = -2*dim*Sin(th)*Cos(ph);
@@ -344,6 +366,7 @@ void display()
       //  Light direction
       float Position[] = {dim*Cos(zh), ylight, dim*Sin(zh), 1};
       //  Draw light position as ball (still no lighting here)
+      glColor3f(1, 1, 1);
       drawSphere(Position[0], Position[1], Position[2], 0.1);
       //  Enable lighting with normalization
       glEnable(GL_LIGHTING);
@@ -357,15 +380,14 @@ void display()
       glLightfv(GL_LIGHT0, GL_DIFFUSE, Diffuse);
       glLightfv(GL_LIGHT0, GL_SPECULAR, Specular);
       glLightfv(GL_LIGHT0, GL_POSITION, Position);
-      glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
-      glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
+      //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
+      //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
    }
    else
       glDisable(GL_LIGHTING);
 
-   const double Z0 = -6;
 
-   drawTable(0, -2, 0, 7*CUP_RADIUS, 1, Z0 - 3.5*R*sqrt(3));
+   drawTable(0, -1.5, 0, 7*CUP_RADIUS, 0.5, Z0 - 3.5*R*sqrt(3));
 
    drawCan(0.5, 2, 6*CUP_RADIUS, -1, -Z0 - sqrt(3));
    drawCan(0.5, 2, -6*CUP_RADIUS, -1, -Z0 - sqrt(3));
@@ -382,6 +404,9 @@ void display()
    drawCup(CUP_RADIUS, CUP_HEIGHT, +R, -1, Z0 - 3*R*sqrt(3));
    drawCup(CUP_RADIUS, CUP_HEIGHT, -3*R, -1, Z0 - 3*R*sqrt(3));
    drawCup(CUP_RADIUS, CUP_HEIGHT, +3*R, -1, Z0 - 3*R*sqrt(3));
+
+   glColor3f(1, (float)153/255, (float)51/255);
+   drawSphere(pBall.x, pBall.y, pBall.z, BALL_RADIUS);
 
    //  Draw axes
    glDisable(GL_LIGHTING);
@@ -477,14 +502,32 @@ void reshape(int width, int height)
    Project(fov, asp, dim);
 }
 
-/*
- *  GLUT calls this routine when the window is resized
- */
+void resetBall()
+{
+   pBall.x = 0;
+   pBall.vx = 0.2;
+   pBall.y = 1;
+   pBall.vy = 2;
+   pBall.z = -Z0;
+   pBall.vz = -1;
+}
+
+void mouse()
+{
+   resetBall();
+}
+
+
 void idle()
 {
    //  Elapsed time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
    zh = fmod(90*t, 360.0);
+
+   pBall.x += pBall.vx;
+   pBall.y += pBall.vy;
+   pBall.z += pBall.vz; 
+   pBall.vy = pBall.vy + GRAVITY;
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -506,6 +549,7 @@ int main(int argc, char* argv[])
    glutSpecialFunc(special);
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
+   glutMouseFunc(mouse);
    //  Load textures
    red = LoadTexBMP("images/red.bmp");
    canside = LoadTexBMP("images/can2.bmp");
