@@ -35,6 +35,7 @@ typedef struct ball {
    float y;
    float z; // Positions
    float vx; float vy; float vz; // Velocities
+   int active;
 } ball;
 
 ball pBall;
@@ -362,7 +363,7 @@ void display()
       float Ambient[] = {0.3, 0.3, 0.3, 1.0};
       float Diffuse[] = {1, 1, 1, 1};
       float Specular[] = {1, 1, 0, 1};
-      float white[] = {1, 1, 1, 1};
+      // float white[] = {1, 1, 1, 1};
       //  Light direction
       float Position[] = {dim*Cos(zh), ylight, dim*Sin(zh), 1};
       //  Draw light position as ball (still no lighting here)
@@ -386,8 +387,9 @@ void display()
    else
       glDisable(GL_LIGHTING);
 
-
-   drawTable(0, -1.5, 0, 7*CUP_RADIUS, 0.5, Z0 - 3.5*R*sqrt(3));
+   const double TABLE_WIDTH = 7*CUP_RADIUS;
+   const double TABLE_LENGTH = Z0 - 3.5*R*sqrt(3);
+   drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
 
    drawCan(0.5, 2, 6*CUP_RADIUS, -1, -Z0 - sqrt(3));
    drawCan(0.5, 2, -6*CUP_RADIUS, -1, -Z0 - sqrt(3));
@@ -404,9 +406,30 @@ void display()
    drawCup(CUP_RADIUS, CUP_HEIGHT, +R, -1, Z0 - 3*R*sqrt(3));
    drawCup(CUP_RADIUS, CUP_HEIGHT, -3*R, -1, Z0 - 3*R*sqrt(3));
    drawCup(CUP_RADIUS, CUP_HEIGHT, +3*R, -1, Z0 - 3*R*sqrt(3));
+ 
+   const double TOL = 0.1;
+   if( pBall.y < -1 + TOL + BALL_RADIUS && pBall.vy < 0 
+       && abs(pBall.x) < TABLE_WIDTH && abs(pBall.z) < abs(TABLE_LENGTH) )
+   {
+      pBall.vy *= 0.7;
+      pBall.vy = -pBall.vy;
+   } 
+   if ( abs(pBall.y - CUP_HEIGHT + 1.5) < TOL && pBall.vy < 0
+        && abs(pBall.z) < abs(TABLE_LENGTH) )
+   {
+      pBall.vy *= 0.7;
+      pBall.vy = -pBall.vy;
+   } 
+   if ( pBall.y < -10 )
+   {
+       pBall.active = 0;
+   }
 
-   glColor3f(1, (float)153/255, (float)51/255);
-   drawSphere(pBall.x, pBall.y, pBall.z, BALL_RADIUS);
+   if( pBall.active )
+   {
+      glColor3f(1, (float)153/255, (float)51/255);
+      drawSphere(pBall.x, pBall.y, pBall.z, BALL_RADIUS);
+   }
 
    //  Draw axes
    glDisable(GL_LIGHTING);
@@ -504,12 +527,13 @@ void reshape(int width, int height)
 
 void resetBall()
 {
+   pBall.active = 1;
    pBall.x = 0;
-   pBall.vx = 0.2;
+   pBall.vx = 0.0;
    pBall.y = 1;
    pBall.vy = 2;
    pBall.z = -Z0;
-   pBall.vz = -1;
+   pBall.vz = -1.5;
 }
 
 void mouse()
