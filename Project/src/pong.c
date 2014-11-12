@@ -16,7 +16,7 @@ int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
-unsigned int canside, cantop, red, wood;  //  Textures
+unsigned int canside, cantop, red, wood, grass;  //  Textures
 
 // Light values
 int emission  =   0;  // Emission intensity (%)
@@ -333,6 +333,36 @@ static void drawTable(double x,double y,double z,
    glDisable(GL_TEXTURE_2D);
 }
 
+void drawGround()
+{
+   const double GROUND_WIDTH = 3*dim;
+   const double GROUND_LENGTH = 3*dim;
+   glPushMatrix();
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, grass);
+   float i, j;
+   float delta = 0.4;
+   for(i = -1; i <= 1 - delta; i += delta)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for(j = -1; j <= 1 - delta; j += delta)
+      {
+         glNormal3f(0, 1, 0);
+         glColor3f(0, 0.7, 0);
+         glTexCoord2f(0, 0);
+         glVertex3f(i*GROUND_WIDTH, -5, j*GROUND_LENGTH);
+         glTexCoord2f(1, 0);
+         glVertex3f((i + delta)*GROUND_WIDTH, -5, j*GROUND_LENGTH);
+         glTexCoord2f(0, 1);
+         glVertex3f(i*GROUND_WIDTH, -5, (j + delta)*GROUND_LENGTH);
+         glTexCoord2f(1, 1);
+         glVertex3f((i + delta)*GROUND_WIDTH, -5, (j + delta)*GROUND_LENGTH);
+      }
+      glEnd();
+   }
+   glDisable(GL_TEXTURE_2D);
+   glPopMatrix();
+}
 
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
@@ -386,6 +416,8 @@ void display()
    }
    else
       glDisable(GL_LIGHTING);
+   
+   drawGround();
 
    const double TABLE_WIDTH = 7*CUP_RADIUS;
    const double TABLE_LENGTH = Z0 - 3.5*R*sqrt(3);
@@ -579,6 +611,7 @@ int main(int argc, char* argv[])
    canside = LoadTexBMP("images/can2.bmp");
    cantop = LoadTexBMP("images/beercan.bmp");
    wood = LoadTexBMP("images/wood.bmp");
+   grass = LoadTexBMP("images/grass.bmp");
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();
