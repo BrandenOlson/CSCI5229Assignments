@@ -364,6 +364,33 @@ void drawGround()
    glPopMatrix();
 }
 
+void drawPost(double x, double y, double z, double dx, double dy, double dz)
+{
+   glPushMatrix();
+   drawTable(x, y, z, dx, dy, dz); 
+   glPopMatrix();
+}
+
+void drawFence()
+{
+   glPushMatrix();
+
+   float i;
+   float delta = 0.05;
+   float FENCE_Z = 3*dim;
+   float FENCE_X = 3*dim;
+   for(i = -1; i <= 1 - delta; i += delta)
+   {
+      drawPost(i*FENCE_X, 0, FENCE_Z, 1, 5, 0.3);
+      drawPost(i*FENCE_X, 0, -FENCE_Z, 1, 5, 0.3);
+      drawPost(FENCE_X, 0, i*FENCE_Z, 0.3, 5, 1);
+      drawPost(-FENCE_X, 0, i*FENCE_Z, 0.3, 5, 1);
+   }
+   glPopMatrix();
+   drawPost(-1.5, 2, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.55555);
+   drawPost(-1.5, -2, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.55555);
+}
+
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
  */
@@ -418,6 +445,7 @@ void display()
       glDisable(GL_LIGHTING);
    
    drawGround();
+   drawFence();
 
    const double TABLE_WIDTH = 7*CUP_RADIUS;
    const double TABLE_LENGTH = Z0 - 3.5*R*sqrt(3);
@@ -452,7 +480,7 @@ void display()
       pBall.vy *= 0.7;
       pBall.vy = -pBall.vy;
    } 
-   if ( pBall.y < -10 )
+   if ( abs(pBall.y + 5) < -10 )
    {
        pBall.active = 0;
    }
