@@ -379,16 +379,23 @@ void drawFence()
    float delta = 0.05;
    float FENCE_Z = 3*dim;
    float FENCE_X = 3*dim;
-   for(i = -1; i <= 1 - delta; i += delta)
+   for(i = -1; i <= 1; i += delta)
    {
-      drawPost(i*FENCE_X, 0, FENCE_Z, 1, 5, 0.3);
+      if(i < -0.7 || i > 0.7) 
+      {
+         drawPost(i*FENCE_X, 0, FENCE_Z, 1, 5, 0.3);
+      }
       drawPost(i*FENCE_X, 0, -FENCE_Z, 1, 5, 0.3);
       drawPost(FENCE_X, 0, i*FENCE_Z, 0.3, 5, 1);
       drawPost(-FENCE_X, 0, i*FENCE_Z, 0.3, 5, 1);
    }
    glPopMatrix();
-   drawPost(-1.5, 2, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.55555);
-   drawPost(-1.5, -2, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.55555);
+   drawPost(0, 2, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
+   drawPost(0, -2, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
+   drawPost(-FENCE_X, 2, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(-FENCE_X, -2, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(FENCE_X, 2, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(FENCE_X, -2, 0, 0.5, 0.5, FENCE_Z);
 }
 
 /*
@@ -606,7 +613,7 @@ void idle()
 {
    //  Elapsed time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-   zh = fmod(90*t, 360.0);
+   //zh = fmod(90*t, 360.0);
 
    pBall.x += pBall.vx;
    pBall.y += pBall.vy;
