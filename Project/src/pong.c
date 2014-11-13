@@ -16,7 +16,7 @@ int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
-unsigned int canside, cantop, red, wood, grass;  //  Textures
+unsigned int canside, cantop, red, wood, grass, silver;  //  Textures
 
 // Light values
 int emission  =   0;  // Emission intensity (%)
@@ -398,6 +398,47 @@ void drawFence()
    drawPost(FENCE_X, -2, 0, 0.5, 0.5, FENCE_Z);
 }
 
+// Thanks to mrmoo on opengl.org for help with this
+static void drawCylinder(double r, double h, double x, double y, double z, 
+                         unsigned int texture)
+{
+   const int SIDE_COUNT = 100;
+   glPushMatrix();
+
+   glTranslated(x, y, z);
+   glScaled(r, h, r);
+
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, texture);
+   glColor3f(1, 1, 1);
+   glBegin(GL_QUAD_STRIP); 
+   int i = 0;
+   for (; i <= SIDE_COUNT; i++) {     
+       float angle = i*((1.0/SIDE_COUNT) * (2*PI));
+       glTexCoord2f(1 - 2*(float)i/SIDE_COUNT, 1);
+       glNormal3d( cos(angle), 0, sin(angle) );
+       glVertex3d( 1*cos(angle), 1, 1*sin(angle) );
+       glTexCoord2f(1 - 2*(float)i/SIDE_COUNT, 0);
+       glVertex3d( 1*cos(angle), 0, 1*sin(angle) );   }
+   glEnd();
+   glDisable(GL_TEXTURE_2D);
+   glPopMatrix();
+}
+
+static void drawKeg(double r, double h, double x, double y, double z)
+{
+   const int SIDE_COUNT = 100;
+   glPushMatrix();
+   glColor3f(0.439, 0.439, 0.439);
+   drawTorus(x, y + h/3, z, r, r/20);
+   drawTorus(x, y, z, r, r/20);
+   drawTorus(x, y - h/2, z, r, r/20);
+   glTranslated(x, y, z);
+   glScaled(r, h, r);
+   drawCylinder(1, 1, 0, 0, 0, silver);
+   glPopMatrix();
+}
+
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
  */
@@ -453,6 +494,7 @@ void display()
    
    drawGround();
    drawFence();
+   drawKeg(1, 4, -9, -5, -3);
 
    const double TABLE_WIDTH = 7*CUP_RADIUS;
    const double TABLE_LENGTH = Z0 - 3.5*R*sqrt(3);
@@ -647,6 +689,7 @@ int main(int argc, char* argv[])
    cantop = LoadTexBMP("images/beercan.bmp");
    wood = LoadTexBMP("images/wood.bmp");
    grass = LoadTexBMP("images/grass.bmp");
+   silver = LoadTexBMP("images/scratch.bmp");
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();
