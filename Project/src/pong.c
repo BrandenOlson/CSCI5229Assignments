@@ -27,14 +27,13 @@ int shininess =   0;  // Shininess (power of two)
 float shinyvec[1];    // Shininess (value)
 
 const double Z0 = -6;
-
+const double Y_GROUND = -8;
 double GRAVITY = -0.5;
 
 typedef struct ball {
-   float x;
-   float y;
-   float z; // Positions
-   float vx; float vy; float vz; // Velocities
+   float x; float y; float z; // Positions
+   float vx; float vy; float vz; // Velocities for actual motion
+   float vxp; float vyp; float vzp; // Potential velocities given by user
    int active;
 } ball;
 
@@ -261,15 +260,9 @@ static void drawCup(double radius, double height,  double x, double y,          
    glPopMatrix();
 }
 
-static void drawTable(double x,double y,double z,
+static void drawCube(double x,double y,double z,
                  double dx,double dy,double dz)
 {
-   //  Set specular color to white
-   //float white[] = {1,1,1,1};
-   //float Emission[]  = {0.0,0.0,0.01*emission,1.0};
-   //glMaterialfv(GL_FRONT_AND_BACK,GL_SHININESS,shinyvec);
-   //glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
-   //glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,Emission);
    //  Save transformation
    glPushMatrix();
    //  Offset, scale and rotate
@@ -333,10 +326,21 @@ static void drawTable(double x,double y,double z,
    glDisable(GL_TEXTURE_2D);
 }
 
+static void drawTable(double xCenter, double yCenter, double zCenter, 
+                      double width, double height, double length)
+{
+   drawCube(xCenter, yCenter, zCenter, width, height, length);
+   double mid = 0.5*(Y_GROUND - 2);
+   drawCube(width - 0.5, mid, length + 0.5, 0.5, mid - Y_GROUND, 0.5);
+   drawCube(-width + 0.5, mid, length + 0.5, 0.5, mid - Y_GROUND, 0.5);
+   drawCube(width - 0.5, mid, -length - 0.5, 0.5, mid - Y_GROUND, 0.5);
+   drawCube(-width + 0.5, mid, -length - 0.5, 0.5, mid - Y_GROUND, 0.5);
+}
+
 void drawGround()
 {
-   const double GROUND_WIDTH = 3*dim;
-   const double GROUND_LENGTH = 3*dim;
+   const double GROUND_WIDTH = 5*dim;
+   const double GROUND_LENGTH = 5*dim;
    glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glBindTexture(GL_TEXTURE_2D, grass);
@@ -350,13 +354,13 @@ void drawGround()
          glNormal3f(0, 1, 0);
          glColor3f(0, 0.7, 0);
          glTexCoord2f(0, 0);
-         glVertex3f(i*GROUND_WIDTH, -5, j*GROUND_LENGTH);
+         glVertex3f(i*GROUND_WIDTH, Y_GROUND, j*GROUND_LENGTH);
          glTexCoord2f(1, 0);
-         glVertex3f((i + delta)*GROUND_WIDTH, -5, j*GROUND_LENGTH);
+         glVertex3f((i + delta)*GROUND_WIDTH, Y_GROUND, j*GROUND_LENGTH);
          glTexCoord2f(0, 1);
-         glVertex3f(i*GROUND_WIDTH, -5, (j + delta)*GROUND_LENGTH);
+         glVertex3f(i*GROUND_WIDTH, Y_GROUND, (j + delta)*GROUND_LENGTH);
          glTexCoord2f(1, 1);
-         glVertex3f((i + delta)*GROUND_WIDTH, -5, (j + delta)*GROUND_LENGTH);
+         glVertex3f((i + delta)*GROUND_WIDTH, Y_GROUND, (j + delta)*GROUND_LENGTH);
       }
       glEnd();
    }
@@ -367,7 +371,7 @@ void drawGround()
 void drawPost(double x, double y, double z, double dx, double dy, double dz)
 {
    glPushMatrix();
-   drawTable(x, y, z, dx, dy, dz); 
+   drawCube(x, y, z, dx, dy, dz); 
    glPopMatrix();
 }
 
@@ -376,26 +380,28 @@ void drawFence()
    glPushMatrix();
 
    float i;
+   float FENCE_Z = 5*dim;
+   float FENCE_X = 5*dim;
+   float FENCE_Y = 7;
+   float Y_MID = Y_GROUND + FENCE_Y;
    float delta = 0.05;
-   float FENCE_Z = 3*dim;
-   float FENCE_X = 3*dim;
    for(i = -1; i <= 1; i += delta)
    {
-      if(i < -0.7 || i > 0.7) 
+      if(i < -0.5 || i > 0.5) 
       {
-         drawPost(i*FENCE_X, 0, FENCE_Z, 1, 5, 0.3);
+         drawPost(i*FENCE_X, Y_MID, FENCE_Z, 1, FENCE_Y, 0.3);
       }
-      drawPost(i*FENCE_X, 0, -FENCE_Z, 1, 5, 0.3);
-      drawPost(FENCE_X, 0, i*FENCE_Z, 0.3, 5, 1);
-      drawPost(-FENCE_X, 0, i*FENCE_Z, 0.3, 5, 1);
+      drawPost(i*FENCE_X, Y_MID, -FENCE_Z, 1, FENCE_Y, 0.3);
+      drawPost(FENCE_X, Y_MID, i*FENCE_Z, 0.3, FENCE_Y, 1);
+      drawPost(-FENCE_X, Y_MID, i*FENCE_Z, 0.3, FENCE_Y, 1);
    }
    glPopMatrix();
-   drawPost(0, 2, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
-   drawPost(0, -2, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
-   drawPost(-FENCE_X, 2, 0, 0.5, 0.5, FENCE_Z);
-   drawPost(-FENCE_X, -2, 0, 0.5, 0.5, FENCE_Z);
-   drawPost(FENCE_X, 2, 0, 0.5, 0.5, FENCE_Z);
-   drawPost(FENCE_X, -2, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(0, Y_MID + 3, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
+   drawPost(0, Y_MID - 3, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
+   drawPost(-FENCE_X, Y_MID + 3, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(-FENCE_X, Y_MID - 3, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(FENCE_X, Y_MID + 3, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(FENCE_X, Y_MID - 3, 0, 0.5, 0.5, FENCE_Z);
 }
 
 // Thanks to mrmoo on opengl.org for help with this
@@ -425,17 +431,44 @@ static void drawCylinder(double r, double h, double x, double y, double z,
    glPopMatrix();
 }
 
+static void drawAnnulus(double rBig, double rSmall, double x, double y, 
+                        double z, unsigned int texture)
+{
+   glPushMatrix();
+   glTranslated(x, y, z);
+   glScaled(rBig, 1, rBig);
+   glBindTexture(GL_TEXTURE_2D, texture);
+   glBegin(GL_QUAD_STRIP);
+   double inner = rSmall/rBig;
+   glTexCoord2f(0.5, 0.5);
+   int i = 0;
+   for(; i <= 360; i += 10)
+   {
+      glNormal3d(0, 1, 0);
+      glTexCoord2f(inner*Cos(i), inner*Sin(i));
+      glVertex3d(inner*Cos(i), 0, inner*Sin(i));
+      glNormal3d(0, 1, 0);
+      glTexCoord2f(Cos(i), Sin(i));
+      glVertex3d(Cos(i), 0, Sin(i));
+   }
+   glEnd();
+   glDisable(GL_TEXTURE_2D);
+   glPopMatrix(); 
+}
+
 static void drawKeg(double r, double h, double x, double y, double z)
 {
-   const int SIDE_COUNT = 100;
    glPushMatrix();
    glColor3f(0.439, 0.439, 0.439);
    drawTorus(x, y + h/3, z, r, r/20);
-   drawTorus(x, y, z, r, r/20);
-   drawTorus(x, y - h/2, z, r, r/20);
+   drawTorus(x, y - h/3, z, r, r/20);
    glTranslated(x, y, z);
    glScaled(r, h, r);
    drawCylinder(1, 1, 0, 0, 0, silver);
+   drawCylinder(0.9, 1, 0, 0, 0, silver);
+   drawAnnulus(1, 0.9, 0, 1, 0, silver);
+   drawAnnulus(1, 0.01, 0, 0.90, 0, silver);
+   drawCylinder(0.15, 0.1, 0, 0.90, 0, silver);
    glPopMatrix();
 }
 
@@ -494,10 +527,11 @@ void display()
    
    drawGround();
    drawFence();
-   drawKeg(1, 4, -9, -5, -3);
+   drawKeg(2, 6, -9, Y_GROUND, -3);
 
    const double TABLE_WIDTH = 7*CUP_RADIUS;
    const double TABLE_LENGTH = Z0 - 3.5*R*sqrt(3);
+   //drawCube(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
    drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
 
    drawCan(0.5, 2, 6*CUP_RADIUS, -1, -Z0 - sqrt(3));
@@ -571,6 +605,13 @@ void display()
    glutSwapBuffers();
 }
 
+void bounce(ball *b)
+{
+   ball bb = *b;
+   bb.vy *= 0.7; // Reduce velocity
+   bb.vy = -bb.vy; // Send the ball upward
+}
+
 /*
  *  GLUT calls this routine when an arrow key is pressed
  */
@@ -602,19 +643,20 @@ void special(int key, int x, int y)
  */
 void key(unsigned char ch, int x, int y)
 {
-   //  Exit on ESC
-   if (ch == 27)
-      exit(0);
    //  Reset view angle
-   else if (ch == '0')
+   if (ch == '0')
    {
       th = 0;
       ph = 25;
    }
-   else if (ch == '-')
-      dim += 0.1;
-   else if (ch == '+')
-      dim -= 0.1;
+   else if ('j' == ch) { pBall.vxp -= 0.01; }
+   else if ('l' == ch) { pBall.vxp += 0.01; }
+   else if ('k' == ch) { pBall.vzp -= 0.01; }
+   else if ('i' == ch) { pBall.vzp += 0.01; }
+   else if ('-' == ch) { dim += 0.1; }
+   else if ('+' == ch) { dim -= 0.1; }
+   else if (27 == ch) { exit(0); } // Exit on ESC
+
    //  Reproject
    Project(fov, asp, dim);
    //  Tell GLUT it is necessary to redisplay the scene
@@ -665,6 +707,16 @@ void idle()
    glutPostRedisplay();
 }
 
+void loadTextures()
+{
+   red = LoadTexBMP("images/red.bmp");
+   canside = LoadTexBMP("images/can2.bmp");
+   cantop = LoadTexBMP("images/beercan.bmp");
+   wood = LoadTexBMP("images/wood.bmp");
+   grass = LoadTexBMP("images/grass.bmp");
+   silver = LoadTexBMP("images/scratch.bmp");
+}
+
 /*
  *  Start up GLUT and tell it what to do
  */
@@ -674,7 +726,7 @@ int main(int argc, char* argv[])
    glutInit(&argc, argv);
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-   glutInitWindowSize(600, 600);
+   glutInitWindowSize(800, 600);
    glutCreateWindow("Party Time! (By Branden Olson)");
    //  Set callbacks
    glutDisplayFunc(display);
@@ -683,13 +735,7 @@ int main(int argc, char* argv[])
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
    glutMouseFunc(mouse);
-   //  Load textures
-   red = LoadTexBMP("images/red.bmp");
-   canside = LoadTexBMP("images/can2.bmp");
-   cantop = LoadTexBMP("images/beercan.bmp");
-   wood = LoadTexBMP("images/wood.bmp");
-   grass = LoadTexBMP("images/grass.bmp");
-   silver = LoadTexBMP("images/scratch.bmp");
+   loadTextures();
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();
