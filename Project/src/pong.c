@@ -185,7 +185,7 @@ void drawTorus(double xCenter, double height, double zCenter,
 static void drawCup(double radius, double height,  double x, double y,                     double z)
 {
    glColor3f(1, 1, 1);
-   drawTorus(x, y+height, z, radius/15, radius);
+   drawTorus(x, y+height, z, radius/20, radius);
    glPushMatrix();
 
    glTranslated(x, y, z);
@@ -436,7 +436,7 @@ static void drawAnnulus(double rBig, double rSmall, double x, double y,
    glScaled(rBig, 1, rBig);
    glBindTexture(GL_TEXTURE_2D, texture);
    glBegin(GL_QUAD_STRIP);
-   double inner = rSmall/rBig;
+   double inner = (double)rSmall/rBig;
    glTexCoord2f(0.5, 0.5);
    int i = 0;
    for(; i <= 360; i += 10)
@@ -457,14 +457,46 @@ static void drawKeg(double r, double h, double x, double y, double z)
 {
    glPushMatrix();
    glColor3f(0.439, 0.439, 0.439);
-   double mid = y + h/2;
-   drawTorus(x, mid, z, r/20, r);
-   drawTorus(x, mid + mid/2, z, r/20, r);
+   drawTorus(x, y + h/4, z, r/20, r);
+   drawTorus(x, y + h/2, z, r/20, r);
+   drawTorus(x, y + 3*h/4, z, r/20, r);
    glTranslated(x, y, z);
    glScaled(r, h, r);
-   drawCylinder(1, 1, 0, 0, 0, silver, 0);
-   drawCylinder(0.9, 1, 0, 0, 0, silver, 0);
-   drawAnnulus(1, 0.9, 0, 1, 0, silver);
+   drawCylinder(1, 0.9, 0, 0, 0, silver, 0);
+   drawCylinder(0.9, 0.9, 0, 0, 0, silver, 0);
+   int theta = 90;
+   int delta = 10;
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, silver);
+   glBegin(GL_QUAD_STRIP);
+   double step;
+   const double HANDLE_RADIUS = 1.05;
+   for(; theta <= 230; theta += delta)
+   {
+      glNormal3f(Cos(theta), 0, Sin(theta));
+      step = (double)(theta - 90)/180;
+      glTexCoord2f(step, 0);
+      glVertex3d(HANDLE_RADIUS*Cos(theta), 0.9, HANDLE_RADIUS*Sin(theta));
+      glTexCoord2f(step, 0.1);
+      glVertex3d(HANDLE_RADIUS*Cos(theta), 0.97, HANDLE_RADIUS*Sin(theta));
+   }
+   glEnd();
+   glBegin(GL_QUAD_STRIP);
+   theta = 270;
+   for(; theta <= 410; theta += delta)
+   {
+      glNormal3f(Cos(theta), 0, Sin(theta));
+      step = (double)(theta - 270)/180;
+      glTexCoord2f(step, 0);
+      glVertex3d(HANDLE_RADIUS*Cos(theta), 0.9, HANDLE_RADIUS*Sin(theta));
+      glTexCoord2f(step, 0.1);
+      glVertex3d(HANDLE_RADIUS*Cos(theta), 0.97, HANDLE_RADIUS*Sin(theta));
+   }
+   glEnd();
+   glDisable(GL_TEXTURE_2D);
+   drawCylinder(1.05, 0.03, 0, 0.97, 0, silver, 0);
+   drawCylinder(0.9, 0.03, 0, 0.97, 0, silver, 0);
+   drawAnnulus(1.05, 0.9, 0, 1, 0, silver);
    drawAnnulus(1, 0.01, 0, 0.90, 0, silver);
    drawCylinder(0.15, 0.1, 0, 0.90, 0, silver, 0);
    glPopMatrix();
