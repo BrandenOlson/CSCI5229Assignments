@@ -6,6 +6,7 @@
 #define PI 3.1415927
 #include "CSCIx229.h"
 #include "OlsonLib.h"
+#include "stdio.h"
 
 int axes = 0;       //  Display axes
 int th = 0;         //  Azimuth of view angle
@@ -117,6 +118,65 @@ static void drawCan(double r, double h, double x, double y, double z)
    glEnd();
    
 
+   glPopMatrix();
+}
+
+// Thanks to mrmoo on opengl.org for help with this
+static void drawCylinder(double r, double h, double x, double y, double z, 
+                         unsigned int texture, int rotation)
+{
+   const int SIDE_COUNT = 100;
+   glPushMatrix();
+
+   glTranslated(x, y, z);
+   glRotated(rotation, 1, 1, 0); 
+   glScaled(r, h, r);
+
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, texture);
+   glColor3f(1, 1, 1);
+   glBegin(GL_QUAD_STRIP); 
+   int i = 0;
+   for (; i <= SIDE_COUNT; i++) {     
+       float angle = i*((1.0/SIDE_COUNT) * (2*PI));
+       glTexCoord2f(1 - 2*(float)i/SIDE_COUNT, 1);
+       glNormal3d( cos(angle), 0, sin(angle) );
+       glVertex3d( 1*cos(angle), 1, 1*sin(angle) );
+       glTexCoord2f(1 - 2*(float)i/SIDE_COUNT, 0);
+       glVertex3d( 1*cos(angle), 0, 1*sin(angle) );   }
+   glEnd();
+   glDisable(GL_TEXTURE_2D);
+   glPopMatrix();
+}
+
+void drawTorusOlson(double xCenter, double height, double zCenter,
+                    double rSmall, double rBig)
+{
+   glPushMatrix();
+   glTranslated(xCenter, height, zCenter);
+   double ratio = rSmall/rBig;
+   double x1, x2, y, z1, z2;
+   int theta = 0;
+   int phi;
+   int delta = 10;
+   for(; theta <= 360 - delta; theta += delta)
+   {
+      glBegin(GL_QUAD_STRIP);
+      phi = 0;
+      for(; phi <= 360; phi += delta)
+      {
+         x1 = (rBig+ rSmall*Cos(phi))*Cos(theta);
+         y = rSmall*Sin(phi);
+         z1 = (rBig + rSmall*Cos(phi))*Sin(theta);
+         glNormal3f(x1, y, z1);
+         glVertex3d(x1, y, z1);
+         x2 = (rBig + rSmall*Cos(phi))*Cos(theta + delta);
+         z2 = (rBig + rSmall*Cos(phi))*Sin(theta + delta);
+         glNormal3f(x1, y, z1);
+         glVertex3d(x2, y, z2);
+      }
+      glEnd();
+   }
    glPopMatrix();
 }
 
@@ -404,33 +464,6 @@ void drawFence()
    drawPost(FENCE_X, Y_MID - 3, 0, 0.5, 0.5, FENCE_Z);
 }
 
-// Thanks to mrmoo on opengl.org for help with this
-static void drawCylinder(double r, double h, double x, double y, double z, 
-                         unsigned int texture)
-{
-   const int SIDE_COUNT = 100;
-   glPushMatrix();
-
-   glTranslated(x, y, z);
-   glScaled(r, h, r);
-
-   glEnable(GL_TEXTURE_2D);
-   glBindTexture(GL_TEXTURE_2D, texture);
-   glColor3f(1, 1, 1);
-   glBegin(GL_QUAD_STRIP); 
-   int i = 0;
-   for (; i <= SIDE_COUNT; i++) {     
-       float angle = i*((1.0/SIDE_COUNT) * (2*PI));
-       glTexCoord2f(1 - 2*(float)i/SIDE_COUNT, 1);
-       glNormal3d( cos(angle), 0, sin(angle) );
-       glVertex3d( 1*cos(angle), 1, 1*sin(angle) );
-       glTexCoord2f(1 - 2*(float)i/SIDE_COUNT, 0);
-       glVertex3d( 1*cos(angle), 0, 1*sin(angle) );   }
-   glEnd();
-   glDisable(GL_TEXTURE_2D);
-   glPopMatrix();
-}
-
 static void drawAnnulus(double rBig, double rSmall, double x, double y, 
                         double z, unsigned int texture)
 {
@@ -464,11 +497,11 @@ static void drawKeg(double r, double h, double x, double y, double z)
    drawTorus(x, y - h/3, z, r, r/20);
    glTranslated(x, y, z);
    glScaled(r, h, r);
-   drawCylinder(1, 1, 0, 0, 0, silver);
-   drawCylinder(0.9, 1, 0, 0, 0, silver);
+   drawCylinder(1, 1, 0, 0, 0, silver, 0);
+   drawCylinder(0.9, 1, 0, 0, 0, silver, 0);
    drawAnnulus(1, 0.9, 0, 1, 0, silver);
    drawAnnulus(1, 0.01, 0, 0.90, 0, silver);
-   drawCylinder(0.15, 0.1, 0, 0.90, 0, silver);
+   drawCylinder(0.15, 0.1, 0, 0.90, 0, silver, 0);
    glPopMatrix();
 }
 
@@ -525,6 +558,7 @@ void display()
    else
       glDisable(GL_LIGHTING);
    
+   drawTorusOlson(0, 6, 0, 0.5, 5);
    drawGround();
    drawFence();
    drawKeg(2, 6, -9, Y_GROUND, -3);
@@ -539,16 +573,20 @@ void display()
    drawCan(0.5, 2, 6*CUP_RADIUS, -1, Z0 + sqrt(3));
    drawCan(0.5, 2, -6*CUP_RADIUS, -1, Z0 + sqrt(3));
 
-   drawCup(CUP_RADIUS, CUP_HEIGHT, 0, -1, Z0);
-   drawCup(CUP_RADIUS, CUP_HEIGHT, -R, -1, Z0 - R*sqrt(3));
-   drawCup(CUP_RADIUS, CUP_HEIGHT, R, -1, Z0 - R*sqrt(3));
-   drawCup(CUP_RADIUS, CUP_HEIGHT, 0, -1, Z0 - 2*R*sqrt(3));
-   drawCup(CUP_RADIUS, CUP_HEIGHT, -2*R, -1, Z0 - 2*R*sqrt(3));
-   drawCup(CUP_RADIUS, CUP_HEIGHT, +2*R, -1, Z0 - 2*R*sqrt(3));
-   drawCup(CUP_RADIUS, CUP_HEIGHT, -R, -1, Z0 - 3*R*sqrt(3));
-   drawCup(CUP_RADIUS, CUP_HEIGHT, +R, -1, Z0 - 3*R*sqrt(3));
-   drawCup(CUP_RADIUS, CUP_HEIGHT, -3*R, -1, Z0 - 3*R*sqrt(3));
-   drawCup(CUP_RADIUS, CUP_HEIGHT, +3*R, -1, Z0 - 3*R*sqrt(3));
+   int i = 1;
+   for(; i >= -1; i -= 2)
+   {
+      drawCup(CUP_RADIUS, CUP_HEIGHT, 0, -1, i*Z0);
+      drawCup(CUP_RADIUS, CUP_HEIGHT, -R, -1, i*(Z0 - R*sqrt(3)));
+      drawCup(CUP_RADIUS, CUP_HEIGHT, R, -1, i*(Z0 - R*sqrt(3)));
+      drawCup(CUP_RADIUS, CUP_HEIGHT, 0, -1, i*(Z0 - 2*R*sqrt(3)));
+      drawCup(CUP_RADIUS, CUP_HEIGHT, -2*R, -1, i*(Z0 - 2*R*sqrt(3)));
+      drawCup(CUP_RADIUS, CUP_HEIGHT, +2*R, -1, i*(Z0 - 2*R*sqrt(3)));
+      drawCup(CUP_RADIUS, CUP_HEIGHT, -R, -1, i*(Z0 - 3*R*sqrt(3)));
+      drawCup(CUP_RADIUS, CUP_HEIGHT, +R, -1, i*(Z0 - 3*R*sqrt(3)));
+      drawCup(CUP_RADIUS, CUP_HEIGHT, -3*R, -1, i*(Z0 - 3*R*sqrt(3)));
+      drawCup(CUP_RADIUS, CUP_HEIGHT, +3*R, -1, i*(Z0 - 3*R*sqrt(3)));
+   }
  
    const double TOL = 0.1;
    if( pBall.y < -1 + TOL + BALL_RADIUS && pBall.vy < 0 
@@ -697,7 +735,7 @@ void idle()
 {
    //  Elapsed time in seconds
    double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-   //zh = fmod(90*t, 360.0);
+   zh = fmod(90*t, 360.0);
 
    pBall.x += pBall.vx;
    pBall.y += pBall.vy;
