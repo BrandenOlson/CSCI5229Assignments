@@ -149,21 +149,20 @@ static void drawCylinder(double r, double h, double x, double y, double z,
    glPopMatrix();
 }
 
-void drawTorusOlson(double xCenter, double height, double zCenter,
+void drawTorus(double xCenter, double height, double zCenter,
                     double rSmall, double rBig)
 {
    glPushMatrix();
    glTranslated(xCenter, height, zCenter);
-   double ratio = rSmall/rBig;
    double x1, x2, y, z1, z2;
    int theta = 0;
    int phi;
-   int delta = 10;
+   int delta = 5;
    for(; theta <= 360 - delta; theta += delta)
    {
       glBegin(GL_QUAD_STRIP);
       phi = 0;
-      for(; phi <= 360; phi += delta)
+      for(; phi <= 360; phi += 2*delta)
       {
          x1 = (rBig+ rSmall*Cos(phi))*Cos(theta);
          y = rSmall*Sin(phi);
@@ -180,48 +179,13 @@ void drawTorusOlson(double xCenter, double height, double zCenter,
    glPopMatrix();
 }
 
-/* Draw a torus */
-void drawTorus(double xVal, double yVal, double zVal, double rbig,
-   double rsmall)
-{
-   glPushMatrix();
-
-   glTranslated(xVal, yVal/1.95, zVal);
-   glScaled(rbig, 1, rbig);
-   glRotated(90, 1, 0, 0);
-
-   int i, j, k;
-   double s, t, x, y, z, twopi;
-   const int numc = 100;
-   const int numt = 100;
-
-   twopi = 2 * (double)M_PI;
-   for (i = 0; i < numc; i++) {
-      glBegin(GL_QUAD_STRIP);
-      for (j = 0; j <= numt; j++) {
-         for (k = 1; k >= 0; k--) {
-            s = (i + k) % numc + 0.5;
-            t = j % numt;
-
-            x = (1+rsmall*cos(s*twopi/numc))*cos(t*twopi/numt);
-            y = (1+rsmall*cos(s*twopi/numc))*sin(t*twopi/numt);
-            z = rsmall * sin(s * twopi / numc);
-            glNormal3f(x, y, z);
-            glVertex3f(x, y, z);
-         }
-      }
-      glEnd();
-   }
-
-   glPopMatrix();
-}
 
 // radius = radius of the top of cup 
 // The bottom's radius is computed from the top's radius
 static void drawCup(double radius, double height,  double x, double y,                     double z)
 {
    glColor3f(1, 1, 1);
-   drawTorus(x, height, z, radius, radius/15);
+   drawTorus(x, y+height, z, radius/15, radius);
    glPushMatrix();
 
    glTranslated(x, y, z);
@@ -493,8 +457,9 @@ static void drawKeg(double r, double h, double x, double y, double z)
 {
    glPushMatrix();
    glColor3f(0.439, 0.439, 0.439);
-   drawTorus(x, y + h/3, z, r, r/20);
-   drawTorus(x, y - h/3, z, r, r/20);
+   double mid = y + h/2;
+   drawTorus(x, mid, z, r/20, r);
+   drawTorus(x, mid + mid/2, z, r/20, r);
    glTranslated(x, y, z);
    glScaled(r, h, r);
    drawCylinder(1, 1, 0, 0, 0, silver, 0);
@@ -558,10 +523,9 @@ void display()
    else
       glDisable(GL_LIGHTING);
    
-   drawTorusOlson(0, 6, 0, 0.5, 5);
    drawGround();
    drawFence();
-   drawKeg(2, 6, -9, Y_GROUND, -3);
+   drawKeg(2, 6, -11, Y_GROUND, -3);
 
    const double TABLE_WIDTH = 7*CUP_RADIUS;
    const double TABLE_LENGTH = Z0 - 3.5*R*sqrt(3);
@@ -734,8 +698,8 @@ void mouse()
 void idle()
 {
    //  Elapsed time in seconds
-   double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-   zh = fmod(90*t, 360.0);
+   //double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
+   //zh = fmod(90*t, 360.0);
 
    pBall.x += pBall.vx;
    pBall.y += pBall.vy;
