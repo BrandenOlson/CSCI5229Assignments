@@ -26,7 +26,7 @@ I referred to mrmoo's code on opengl.org for help with my drawCylinder
 function. 
  
 I made use of the CSCIx229.h library and snagged some code from some
-class examples.
+class examples. I also used loadtexbmp.c, created by Dr. Schreuder
 
 I modified the source of the glut torus function to work with my
 requirements for the drawCup() function. 

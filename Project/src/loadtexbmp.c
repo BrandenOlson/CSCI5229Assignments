@@ -1,5 +1,6 @@
 /*
  *  Load texture from BMP file
+ *  Courtesy of Willem Schreuder
  */
 #include "CSCIx229.h"
 
