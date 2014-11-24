@@ -72,17 +72,29 @@ materialStruct metal =
    27.8
 };
 
-void ShadowProjection(float L[4], float E[4], float N[4])
+void makeShadowProjection(float L[4], float E[4], float N[4])
 {
    float mat[16];
    float e = E[0]*N[0] + E[1]*N[1] + E[2]*N[2];
    float l = L[0]*N[0] + L[1]*N[1] + L[2]*N[2];
    float c = e - l;
    //  Create the matrix.
-   mat[0] = N[0]*L[0]+c; mat[4] = N[1]*L[0];   mat[8]  = N[2]*L[0];   mat[12] = -e*L[0];
-   mat[1] = N[0]*L[1];   mat[5] = N[1]*L[1]+c; mat[9]  = N[2]*L[1];   mat[13] = -e*L[1];
-   mat[2] = N[0]*L[2];   mat[6] = N[1]*L[2];   mat[10] = N[2]*L[2]+c; mat[14] = -e*L[2];
-   mat[3] = N[0];        mat[7] = N[1];        mat[11] = N[2];        mat[15] = -l;
+   mat[0] = N[0]*L[0] + c;
+   mat[4] = N[1]*L[0];
+   mat[8] = N[2]*L[0];
+   mat[12] = -e*L[0];
+   mat[1] = N[0]*L[1];
+   mat[5] = N[1]*L[1] + c;
+   mat[9] = N[2]*L[1];
+   mat[13] = -e*L[1];
+   mat[2] = N[0]*L[2];
+   mat[6] = N[1]*L[2];
+   mat[10] = N[2]*L[2] + c; 
+   mat[14] = -e*L[2];
+   mat[3] = N[0];
+   mat[7] = N[1];
+   mat[11] = N[2];
+   mat[15] = -l;
    //  Multiply modelview matrix
    glMultMatrixf(mat);
 }
@@ -706,7 +718,7 @@ void display()
       //  Draw flattened scene
       case 1:
          glPushMatrix();
-         ShadowProjection(Position,E,N);
+         makeShadowProjection(Position,E,N);
          drawTableScene();
          drawScene();
          glPopMatrix();
@@ -716,7 +728,7 @@ void display()
          glDisable(GL_LIGHTING);
          //  Draw flattened scene
          glPushMatrix();
-         ShadowProjection(Position,E,N);
+         makeShadowProjection(Position,E,N);
          drawTableScene();
          drawScene();
          glPopMatrix();
@@ -731,7 +743,7 @@ void display()
          glDepthMask(0);
          //  Draw flattened scene
          glPushMatrix();
-         ShadowProjection(Position,E,N);
+         makeShadowProjection(Position,E,N);
          drawTableScene();
          drawScene();
          glPopMatrix();
@@ -757,7 +769,7 @@ void display()
          glColorMask(0,0,0,0);
          //  Draw flattened scene
          glPushMatrix();
-         ShadowProjection(Position,E,N);
+         makeShadowProjection(Position,E,N);
          drawTableScene();
          drawScene();
          glPopMatrix();
@@ -799,7 +811,7 @@ void display()
       //  Draw flattened scene
       case 1:
          glPushMatrix();
-         ShadowProjection(Position,E2,N);
+         makeShadowProjection(Position,E2,N);
          drawTableScene();
          glPopMatrix();
          break;
@@ -808,7 +820,7 @@ void display()
          glDisable(GL_LIGHTING);
          //  Draw flattened scene
          glPushMatrix();
-         ShadowProjection(Position,E2,N);
+         makeShadowProjection(Position,E2,N);
          drawTableScene();
          glPopMatrix();
          break;
@@ -822,7 +834,7 @@ void display()
          glDepthMask(0);
          //  Draw flattened scene
          glPushMatrix();
-         ShadowProjection(Position,E2,N);
+         makeShadowProjection(Position,E2,N);
          drawTableScene();
          glPopMatrix();
          //  Make Z-buffer read-write
@@ -847,7 +859,7 @@ void display()
          glColorMask(0,0,0,0);
          //  Draw flattened scene
          glPushMatrix();
-         ShadowProjection(Position,E2,N);
+         makeShadowProjection(Position,E2,N);
          drawTableScene();
          glPopMatrix();
          //  Make Z-buffer and color buffer read-write
@@ -897,11 +909,6 @@ void display()
        pBall.active = 0;
    }
 
-   if( pBall.active )
-   {
-      glColor3f(1, (float)153/255, (float)51/255);
-      drawSphere(pBall.x, pBall.y, pBall.z, BALL_RADIUS);
-   }
 
    //  Draw axes
    glDisable(GL_LIGHTING);
