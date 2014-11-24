@@ -17,6 +17,7 @@ int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
+int mode = 0;
 unsigned int canside, cantop, red, wood, grass, silver;  //  Textures
 
 // Light values
@@ -28,8 +29,29 @@ int shininess =   0;  // Shininess (power of two)
 float shinyvec[1];    // Shininess (value)
 
 const double Z0 = -6;
-const double Y_GROUND = -8;
-double GRAVITY = -0.5;
+#define Y_GROUND -8
+#define GROUND_WIDTH 5*dim
+#define GROUND_LENGTH 5*dim
+#define CUP_RADIUS 0.7 
+#define BALL_RADIUS CUP_RADIUS/2
+#define R  (CUP_RADIUS + CUP_RADIUS/15/2)
+#define CUP_HEIGHT 2.1
+#define GRAVITY -0.5
+#define TABLE_WIDTH 7*CUP_RADIUS
+#define TABLE_LENGTH Z0 - 3.5*R*sqrt(3)
+#define MODE 6
+
+char* text[]={"No shadows",
+              "Draw flattened scene",
+              "Flattened scene with lighting disabled",
+              "Flattened scene with color grey color",
+              "Blended shadows",
+              "Blended shadows with Z-buffer read-only",
+              "Blended shadows with stencil buffer",
+             };
+
+float N[] = {0, -1, 0}; // Normal vector for the plane
+float E[] = {0, Y_GROUND, 0 }; // Point of the plane
 
 typedef struct ball {
    float x; float y; float z; // Positions
@@ -47,6 +69,21 @@ materialStruct metal =
    {0.99, 0.91, 0.81, 1.0},
    27.8
 };
+
+void ShadowProjection(float L[4], float E[4], float N[4])
+{
+   float mat[16];
+   float e = E[0]*N[0] + E[1]*N[1] + E[2]*N[2];
+   float l = L[0]*N[0] + L[1]*N[1] + L[2]*N[2];
+   float c = e - l;
+   //  Create the matrix.
+   mat[0] = N[0]*L[0]+c; mat[4] = N[1]*L[0];   mat[8]  = N[2]*L[0];   mat[12] = -e*L[0];
+   mat[1] = N[0]*L[1];   mat[5] = N[1]*L[1]+c; mat[9]  = N[2]*L[1];   mat[13] = -e*L[1];
+   mat[2] = N[0]*L[2];   mat[6] = N[1]*L[2];   mat[10] = N[2]*L[2]+c; mat[14] = -e*L[2];
+   mat[3] = N[0];        mat[7] = N[1];        mat[11] = N[2];        mat[15] = -l;
+   //  Multiply modelview matrix
+   glMultMatrixf(mat);
+}
 
 /*
  *  Draw a ball
@@ -363,8 +400,6 @@ static void drawTable(double xCenter, double yCenter, double zCenter,
 
 void drawGround()
 {
-   const double GROUND_WIDTH = 5*dim;
-   const double GROUND_LENGTH = 5*dim;
    glPushMatrix();
    glEnable(GL_TEXTURE_2D);
    glBindTexture(GL_TEXTURE_2D, grass);
@@ -553,66 +588,12 @@ static void drawKeg(double r, double h, double x, double y, double z)
    glPopMatrix();
 }
 
-/*
- *  OpenGL (GLUT) calls this routine to display the scene
- */
-void display()
+void drawScene()
 {
-   const double len = 2.5;  //  Length of axes
-   const double CUP_RADIUS = 0.7; 
-   const double BALL_RADIUS = CUP_RADIUS/2;
-   const double R = CUP_RADIUS + CUP_RADIUS/15/2;
-   const double CUP_HEIGHT = 2.1;
-   double Ex = -2*dim*Sin(th)*Cos(ph);
-   double Ey = +2*dim        *Sin(ph);
-   double Ez = +2*dim*Cos(th)*Cos(ph);
-   //  Erase the window and the depth buffer
-   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-   //  Enable Z-buffering in OpenGL
-   glEnable(GL_DEPTH_TEST);
-   //glEnable(GL_CULL_FACE);
-   //  Undo previous transformations
-   glLoadIdentity();
-   //  Perspective - set eye position
-   gluLookAt(Ex, Ey, Ez, 0, 0, 0, 0, Cos(ph), 0);
-   //  Light switch
-   if (light)
-   {
-      //  Translate intensity to color vectors
-      float Ambient[] = {0.3, 0.3, 0.3, 1.0};
-      float Diffuse[] = {1, 1, 1, 1};
-      float Specular[] = {1, 1, 0, 1};
-      // float white[] = {1, 1, 1, 1};
-      //  Light direction
-      float Position[] = {dim*Cos(zh), ylight, dim*Sin(zh), 1};
-      //  Draw light position as ball (still no lighting here)
-      glColor3f(1, 1, 1);
-      drawSphere(Position[0], Position[1], Position[2], 0.1);
-      //  Enable lighting with normalization
-      glEnable(GL_LIGHTING);
-      glEnable(GL_NORMALIZE);
-      //  glColor sets ambient and diffuse color materials
-      glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-      glEnable(GL_COLOR_MATERIAL);
-      //  Enable light 0
-      glEnable(GL_LIGHT0);
-      glLightfv(GL_LIGHT0, GL_AMBIENT, Ambient);
-      glLightfv(GL_LIGHT0, GL_DIFFUSE, Diffuse);
-      glLightfv(GL_LIGHT0, GL_SPECULAR, Specular);
-      glLightfv(GL_LIGHT0, GL_POSITION, Position);
-      //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
-      //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
-   }
-   else
-      glDisable(GL_LIGHTING);
-   
-   drawGround();
    drawFence();
    drawKeg(2, 6, -11, Y_GROUND, -3);
+   drawKeg(2, 6, -11, Y_GROUND, 3);
 
-   const double TABLE_WIDTH = 7*CUP_RADIUS;
-   const double TABLE_LENGTH = Z0 - 3.5*R*sqrt(3);
-   //drawCube(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
    drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
 
    drawCan(0.5, 2, 6*CUP_RADIUS, -1, -Z0 - sqrt(3));
@@ -634,6 +615,168 @@ void display()
       drawCup(CUP_RADIUS, CUP_HEIGHT, -3*R, -1, i*(Z0 - 3*R*sqrt(3)));
       drawCup(CUP_RADIUS, CUP_HEIGHT, +3*R, -1, i*(Z0 - 3*R*sqrt(3)));
    }
+
+}
+
+void display()
+{
+   const double len = 2.5;  //  Length of axes
+   double Ex = -2*dim*Sin(th)*Cos(ph);
+   double Ey = +2*dim        *Sin(ph);
+   double Ez = +2*dim*Cos(th)*Cos(ph);
+   //  Erase the window and the depth buffer
+   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+   //  Enable Z-buffering in OpenGL
+   glEnable(GL_DEPTH_TEST);
+   //glEnable(GL_CULL_FACE);
+   //  Undo previous transformations
+   glLoadIdentity();
+   //  Perspective - set eye position
+   gluLookAt(Ex, Ey, Ez, 0, 0, 0, 0, Cos(ph), 0);
+   //  Light switch
+   //  Translate intensity to color vectors
+   float Ambient[] = {0.3, 0.3, 0.3, 1.0};
+   float Diffuse[] = {1, 1, 1, 1};
+   float Specular[] = {1, 1, 0, 1};
+   // float white[] = {1, 1, 1, 1};
+   //  Light direction
+   float Position[] = {dim*Cos(zh), ylight, dim*Sin(zh), 1};
+   //  Draw light position as ball (still no lighting here)
+   glColor3f(1, 1, 1);
+   drawSphere(Position[0], Position[1], Position[2], 0.1);
+   //  Enable lighting with normalization
+   glEnable(GL_LIGHTING);
+   glEnable(GL_NORMALIZE);
+   //  glColor sets ambient and diffuse color materials
+   glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+   glEnable(GL_COLOR_MATERIAL);
+   //  Enable light 0
+   glEnable(GL_LIGHT0);
+   glLightfv(GL_LIGHT0, GL_AMBIENT, Ambient);
+   glLightfv(GL_LIGHT0, GL_DIFFUSE, Diffuse);
+   glLightfv(GL_LIGHT0, GL_SPECULAR, Specular);
+   glLightfv(GL_LIGHT0, GL_POSITION, Position);
+   //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
+   //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
+   
+   drawGround();
+   drawScene();
+
+   //  Save what is glEnabled
+   glPushAttrib(GL_ENABLE_BIT);
+   //  Draw shadow
+   switch (mode)
+   {
+      //  No shadow
+      case 0:
+         break;
+      //  Draw flattened scene
+      case 1:
+         glPushMatrix();
+         ShadowProjection(Position,E,N);
+         drawScene();
+         glPopMatrix();
+         break;
+      //  Transformation with lighting disabled
+      case 2:
+         glDisable(GL_LIGHTING);
+         //  Draw flattened scene
+         glPushMatrix();
+         ShadowProjection(Position,E,N);
+         drawScene();
+         glPopMatrix();
+         break;
+      //  Set shadow color
+      case 3:
+         glDisable(GL_LIGHTING);
+         glColor3f(0.3,0.3,0.3);
+         //  Draw flattened scene
+         glPushMatrix();
+         ShadowProjection(Position,E,N);
+         drawScene();
+         glPopMatrix();
+         break;
+      //  Blended shadows
+      case 4:
+         glDisable(GL_LIGHTING);
+         //  Blended color
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         glColor4f(0,0,0,0.4);
+         //  Draw flattened scene
+         glPushMatrix();
+         ShadowProjection(Position,E,N);
+         drawScene();
+         glPopMatrix();
+         break;
+      //  Blended shadows Z-buffer masked
+      case 5:
+         glDisable(GL_LIGHTING);
+         //  Draw blended 
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         glColor4f(0,0,0,0.4);
+         //  Make Z-buffer read-only
+         glDepthMask(0);
+         //  Draw flattened scene
+         glPushMatrix();
+         ShadowProjection(Position,E,N);
+         drawScene();
+         glPopMatrix();
+         //  Make Z-buffer read-write
+         glDepthMask(1);
+         break;
+      //  Blended with stencil buffer
+      case 6:
+         glDisable(GL_LIGHTING);
+         //  Enable stencil operations
+         glEnable(GL_STENCIL_TEST);
+
+         /*
+          *  Step 1:  Set stencil buffer to 1 where there are shadows
+          */
+         //  Existing value of stencil buffer doesn't matter
+         glStencilFunc(GL_ALWAYS,1,0xFFFFFFFF);
+         //  Set the value to 1 (REF=1 in StencilFunc)
+         //  only if Z-buffer would allow write
+         glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
+         //  Make Z-buffer and color buffer read-only
+         glDepthMask(0);
+         glColorMask(0,0,0,0);
+         //  Draw flattened scene
+         glPushMatrix();
+         ShadowProjection(Position,E,N);
+         drawScene();
+         glPopMatrix();
+         //  Make Z-buffer and color buffer read-write
+         glDepthMask(1);
+         glColorMask(1,1,1,1);
+
+         /*
+          *  Step 2:  Draw shadow masked by stencil buffer
+          */
+         //  Set the stencil test draw where stencil buffer is > 0
+         glStencilFunc(GL_LESS,0,0xFFFFFFFF);
+         //  Make the stencil buffer read-only
+         glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+         //  Enable blending
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         glColor4f(0,0,0,0.5);
+         //  Draw the shadow over the entire floor
+         glBegin(GL_QUADS);
+         glVertex3f(-GROUND_WIDTH,Y_GROUND,-GROUND_LENGTH);
+         glVertex3f(+GROUND_WIDTH,Y_GROUND,-GROUND_LENGTH);
+         glVertex3f(+GROUND_WIDTH,Y_GROUND,+GROUND_LENGTH);
+         glVertex3f(-GROUND_WIDTH,Y_GROUND,+GROUND_LENGTH);
+         glEnd();
+         break;
+      default:
+         break;
+   }    
+   //  Undo glEnables
+   glPopAttrib();
+
  
    const double TOL = 0.1;
    if( pBall.y < -1 + TOL + BALL_RADIUS && pBall.vy < 0 
@@ -684,6 +827,7 @@ void display()
    glWindowPos2i(5, 5);
    Print("Angle=%d,%d  Dim=%.1f Light=%s", th, ph, dim, light? "On" :
          "Off");
+   Print(text[mode]);
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
@@ -741,6 +885,7 @@ void key(unsigned char ch, int x, int y)
    else if ('-' == ch) { dim += 0.1; }
    else if ('+' == ch) { dim -= 0.1; }
    else if (27 == ch) { exit(0); } // Exit on ESC
+   else if (ch == 'm' && mode<MODE) { mode++; };
 
    //  Reproject
    Project(fov, asp, dim);
