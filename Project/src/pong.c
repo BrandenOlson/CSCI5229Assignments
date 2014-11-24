@@ -415,29 +415,6 @@ static void drawTable(double xCenter, double yCenter, double zCenter,
    drawCube(-width + 0.5, mid, -length + 0.5, 0.5, mid - Y_GROUND, 0.5);
 }
 
-void drawGround2()
-{
-   glEnable(GL_TEXTURE_2D);
-   glBindTexture(GL_TEXTURE_2D, grass);
-   glEnable(GL_POLYGON_OFFSET_FILL);
-   glPolygonOffset(1,1);
-   glNormal3f(0,1,0);
-   int i, j;
-   int delta = 5;
-   for (j = -GROUND_WIDTH; j < GROUND_WIDTH; j += delta)
-   {
-      glBegin(GL_QUAD_STRIP);
-      for (i = -GROUND_LENGTH; i <= GROUND_LENGTH; i += delta)
-      {
-         glTexCoord2f(i,j); glVertex3f(i,Y_GROUND,j);
-         glTexCoord2f(i,j + delta); glVertex3f(i,Y_GROUND,j + delta);
-      }
-      glEnd();
-   }
-   glDisable(GL_POLYGON_OFFSET_FILL);
-   glDisable(GL_TEXTURE_2D);
-}
-
 void drawGround()
 {
    glPushMatrix();
@@ -662,6 +639,104 @@ void drawScene()
    drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
 }
 
+void drawGroundShadows(float L[4], float E[4], float N[4])
+{
+   //  Blended with stencil buffer
+   glDisable(GL_LIGHTING);
+   //  Enable stencil operations
+   glEnable(GL_STENCIL_TEST);
+
+   /*
+    *  Step 1:  Set stencil buffer to 1 where there are shadows
+    */
+   //  Existing value of stencil buffer doesn't matter
+   glStencilFunc(GL_ALWAYS,1,0xFFFFFFFF);
+   //  Set the value to 1 (REF=1 in StencilFunc)
+   //  only if Z-buffer would allow write
+   glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
+   //  Make Z-buffer and color buffer read-only
+   glDepthMask(0);
+   glColorMask(0,0,0,0);
+   //  Draw flattened scene
+   glPushMatrix();
+   makeShadowProjection(L,E,N);
+   drawTableScene();
+   drawScene();
+   glPopMatrix();
+   //  Make Z-buffer and color buffer read-write
+   glDepthMask(1);
+   glColorMask(1,1,1,1);
+
+   /*
+    *  Step 2:  Draw shadow masked by stencil buffer
+    */
+   //  Set the stencil test draw where stencil buffer is > 0
+   glStencilFunc(GL_LESS,0,0xFFFFFFFF);
+   //  Make the stencil buffer read-only
+   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+   //  Enable blending
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+   glColor4f(0,0,0,0.5);
+   //  Draw the shadow over the entire floor
+   glBegin(GL_QUADS);
+   glVertex3f(-GROUND_WIDTH,Y_GROUND,-GROUND_LENGTH);
+   glVertex3f(+GROUND_WIDTH,Y_GROUND,-GROUND_LENGTH);
+   glVertex3f(+GROUND_WIDTH,Y_GROUND,+GROUND_LENGTH);
+   glVertex3f(-GROUND_WIDTH,Y_GROUND,+GROUND_LENGTH);
+   glEnd();
+
+}
+
+void drawTableShadows(float L[4], float E[4], float N[4])
+{
+   //  Draw table shadows
+      //  Blended with stencil buffer
+   glDisable(GL_LIGHTING);
+   //  Enable stencil operations
+   glEnable(GL_STENCIL_TEST);
+
+   /*
+    *  Step 1:  Set stencil buffer to 1 where there are shadows
+    */
+   //  Existing value of stencil buffer doesn't matter
+   glStencilFunc(GL_ALWAYS,1,0xFFFFFFFF);
+   //  Set the value to 1 (REF=1 in StencilFunc)
+   //  only if Z-buffer would allow write
+   glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
+   //  Make Z-buffer and color buffer read-only
+   glDepthMask(0);
+   glColorMask(0,0,0,0);
+   //  Draw flattened scene
+   glPushMatrix();
+   makeShadowProjection(L,E2,N);
+   drawTableScene();
+   glPopMatrix();
+   //  Make Z-buffer and color buffer read-write
+   glDepthMask(1);
+   glColorMask(1,1,1,1);
+
+   /*
+    *  Step 2:  Draw shadow masked by stencil buffer
+    */
+   //  Set the stencil test draw where stencil buffer is > 0
+   glStencilFunc(GL_LESS,0,0xFFFFFFFF);
+   //  Make the stencil buffer read-only
+   glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+   //  Enable blending
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+   glColor4f(0,0,0,0.5);
+   //  Draw the shadow over the entire floor
+   glBegin(GL_QUADS);
+   glVertex3f(-TABLE_WIDTH,-1,-TABLE_LENGTH);
+   glVertex3f(+TABLE_WIDTH,-1,-TABLE_LENGTH);
+   glVertex3f(+TABLE_WIDTH,-1,+TABLE_LENGTH);
+   glVertex3f(-TABLE_WIDTH,-1,+TABLE_LENGTH);
+   glEnd();
+
+}
+
 void display()
 {
    const double len = 2.5;  //  Length of axes
@@ -710,184 +785,9 @@ void display()
    //  Save what is glEnabled
    glPushAttrib(GL_ENABLE_BIT);
    //  Draw shadow
-   switch (mode)
-   {
-      //  No shadow
-      case 0:
-         break;
-      //  Draw flattened scene
-      case 1:
-         glPushMatrix();
-         makeShadowProjection(Position,E,N);
-         drawTableScene();
-         drawScene();
-         glPopMatrix();
-         break;
-      //  Transformation with lighting disabled
-      case 2:
-         glDisable(GL_LIGHTING);
-         //  Draw flattened scene
-         glPushMatrix();
-         makeShadowProjection(Position,E,N);
-         drawTableScene();
-         drawScene();
-         glPopMatrix();
-         break;
-      case 3:
-         glDisable(GL_LIGHTING);
-         //  Draw blended 
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-         glColor4f(0,0,0,0.4);
-         //  Make Z-buffer read-only
-         glDepthMask(0);
-         //  Draw flattened scene
-         glPushMatrix();
-         makeShadowProjection(Position,E,N);
-         drawTableScene();
-         drawScene();
-         glPopMatrix();
-         //  Make Z-buffer read-write
-         glDepthMask(1);
-         break;
-      //  Blended with stencil buffer
-      case 4:
-         glDisable(GL_LIGHTING);
-         //  Enable stencil operations
-         glEnable(GL_STENCIL_TEST);
-
-         /*
-          *  Step 1:  Set stencil buffer to 1 where there are shadows
-          */
-         //  Existing value of stencil buffer doesn't matter
-         glStencilFunc(GL_ALWAYS,1,0xFFFFFFFF);
-         //  Set the value to 1 (REF=1 in StencilFunc)
-         //  only if Z-buffer would allow write
-         glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
-         //  Make Z-buffer and color buffer read-only
-         glDepthMask(0);
-         glColorMask(0,0,0,0);
-         //  Draw flattened scene
-         glPushMatrix();
-         makeShadowProjection(Position,E,N);
-         drawTableScene();
-         drawScene();
-         glPopMatrix();
-         //  Make Z-buffer and color buffer read-write
-         glDepthMask(1);
-         glColorMask(1,1,1,1);
-
-         /*
-          *  Step 2:  Draw shadow masked by stencil buffer
-          */
-         //  Set the stencil test draw where stencil buffer is > 0
-         glStencilFunc(GL_LESS,0,0xFFFFFFFF);
-         //  Make the stencil buffer read-only
-         glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-         //  Enable blending
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-         glColor4f(0,0,0,0.5);
-         //  Draw the shadow over the entire floor
-         glBegin(GL_QUADS);
-         glVertex3f(-GROUND_WIDTH,Y_GROUND,-GROUND_LENGTH);
-         glVertex3f(+GROUND_WIDTH,Y_GROUND,-GROUND_LENGTH);
-         glVertex3f(+GROUND_WIDTH,Y_GROUND,+GROUND_LENGTH);
-         glVertex3f(-GROUND_WIDTH,Y_GROUND,+GROUND_LENGTH);
-         glEnd();
-         break;
-      default:
-         break;
-   }    
-
+   drawGroundShadows(Position, E, N);
    glClear(GL_STENCIL_BUFFER_BIT);
-   
-   //  Draw shadow
-   switch (mode)
-   {
-      //  No shadow
-      case 0:
-         break;
-      //  Draw flattened scene
-      case 1:
-         glPushMatrix();
-         makeShadowProjection(Position,E2,N);
-         drawTableScene();
-         glPopMatrix();
-         break;
-      //  Transformation with lighting disabled
-      case 2:
-         glDisable(GL_LIGHTING);
-         //  Draw flattened scene
-         glPushMatrix();
-         makeShadowProjection(Position,E2,N);
-         drawTableScene();
-         glPopMatrix();
-         break;
-      case 3:
-         glDisable(GL_LIGHTING);
-         //  Draw blended 
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-         glColor4f(0,0,0,0.4);
-         //  Make Z-buffer read-only
-         glDepthMask(0);
-         //  Draw flattened scene
-         glPushMatrix();
-         makeShadowProjection(Position,E2,N);
-         drawTableScene();
-         glPopMatrix();
-         //  Make Z-buffer read-write
-         glDepthMask(1);
-         break;
-      //  Blended with stencil buffer
-      case 4:
-         glDisable(GL_LIGHTING);
-         //  Enable stencil operations
-         glEnable(GL_STENCIL_TEST);
-
-         /*
-          *  Step 1:  Set stencil buffer to 1 where there are shadows
-          */
-         //  Existing value of stencil buffer doesn't matter
-         glStencilFunc(GL_ALWAYS,1,0xFFFFFFFF);
-         //  Set the value to 1 (REF=1 in StencilFunc)
-         //  only if Z-buffer would allow write
-         glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
-         //  Make Z-buffer and color buffer read-only
-         glDepthMask(0);
-         glColorMask(0,0,0,0);
-         //  Draw flattened scene
-         glPushMatrix();
-         makeShadowProjection(Position,E2,N);
-         drawTableScene();
-         glPopMatrix();
-         //  Make Z-buffer and color buffer read-write
-         glDepthMask(1);
-         glColorMask(1,1,1,1);
-
-         /*
-          *  Step 2:  Draw shadow masked by stencil buffer
-          */
-         //  Set the stencil test draw where stencil buffer is > 0
-         glStencilFunc(GL_LESS,0,0xFFFFFFFF);
-         //  Make the stencil buffer read-only
-         glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-         //  Enable blending
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-         glColor4f(0,0,0,0.5);
-         //  Draw the shadow over the entire floor
-         glBegin(GL_QUADS);
-         glVertex3f(-TABLE_WIDTH,-1,-TABLE_LENGTH);
-         glVertex3f(+TABLE_WIDTH,-1,-TABLE_LENGTH);
-         glVertex3f(+TABLE_WIDTH,-1,+TABLE_LENGTH);
-         glVertex3f(-TABLE_WIDTH,-1,+TABLE_LENGTH);
-         glEnd();
-         break;
-      default:
-         break;
-   }
+   drawTableShadows(Position, E2, N); 
    //  Undo glEnables
    glPopAttrib();
  
