@@ -8,11 +8,14 @@
 #include "OlsonLib.h"
 #include "stdio.h"
 
+int twoShadows = 1;
+
 int axes = 0;       //  Display axes
 int th = 0;         //  Azimuth of view angle
 int ph = 25;         //  Elevation of view angle
 int zh= 0;         //  Azimuth of light
 double ylight  =  8;  // Elevation of light
+#define LIGHT_RADIUS dim/1.5
 int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
@@ -49,7 +52,8 @@ char* text[]={"No shadows",
              };
 
 float N[] = {0, -1, 0}; // Normal vector for the plane
-float E[] = {0, Y_GROUND, 0 }; // Point of the plane
+float E[] = {0, Y_GROUND, 0 }; // Point of the ground plane
+float E2[] = {0, -1, 0}; // Point of the table plane
 
 typedef struct ball {
    float x; float y; float z; // Positions
@@ -388,7 +392,10 @@ static void drawCube(double x,double y,double z,
 static void drawTable(double xCenter, double yCenter, double zCenter, 
                       double width, double height, double length)
 {
+   glEnable(GL_POLYGON_OFFSET_FILL);
+   glPolygonOffset(0.5, 0.5);
    drawCube(xCenter, yCenter, zCenter, width, height, length);
+   glDisable(GL_POLYGON_OFFSET_FILL);
    double mid = 0.5*(Y_GROUND - 2);
    drawCube(width - 0.5, mid, length + 0.5, 0.5, mid - Y_GROUND, 0.5);
    drawCube(-width + 0.5, mid, length + 0.5, 0.5, mid - Y_GROUND, 0.5);
@@ -611,14 +618,8 @@ static void drawKeg(double r, double h, double x, double y, double z)
    glPopMatrix();
 }
 
-void drawScene()
+void drawTableScene()
 {
-   drawFence();
-   drawKeg(2, 6, -11, Y_GROUND, -3);
-   drawKeg(2, 6, -11, Y_GROUND, 3);
-
-   drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
-
    drawCan(0.5, 2, 6*CUP_RADIUS, -1, -Z0 - sqrt(3));
    drawCan(0.5, 2, -6*CUP_RADIUS, -1, -Z0 - sqrt(3));
    drawCan(0.5, 2, 6*CUP_RADIUS, -1, Z0 + sqrt(3));
@@ -638,7 +639,15 @@ void drawScene()
       drawCup(CUP_RADIUS, CUP_HEIGHT, -3*R, -1, i*(Z0 - 3*R*sqrt(3)));
       drawCup(CUP_RADIUS, CUP_HEIGHT, +3*R, -1, i*(Z0 - 3*R*sqrt(3)));
    }
+}
 
+void drawScene()
+{
+   drawFence();
+   drawKeg(2, 6, -11, Y_GROUND, -3);
+   drawKeg(2, 6, -11, Y_GROUND, 3);
+
+   drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
 }
 
 void display()
@@ -663,7 +672,7 @@ void display()
    float Specular[] = {1, 1, 0, 1};
    // float white[] = {1, 1, 1, 1};
    //  Light direction
-   float Position[] = {dim*Cos(zh), ylight, dim*Sin(zh), 1};
+   float Position[] = {LIGHT_RADIUS*Cos(zh), ylight, LIGHT_RADIUS*Sin(zh), 1};
    //  Draw light position as ball (still no lighting here)
    glColor3f(1, 1, 1);
    drawSphere(Position[0], Position[1], Position[2], 0.1);
@@ -684,6 +693,7 @@ void display()
    
    drawGround();
    drawScene();
+   drawTableScene();
 
    //  Save what is glEnabled
    glPushAttrib(GL_ENABLE_BIT);
@@ -697,6 +707,7 @@ void display()
       case 1:
          glPushMatrix();
          ShadowProjection(Position,E,N);
+         drawTableScene();
          drawScene();
          glPopMatrix();
          break;
@@ -706,6 +717,7 @@ void display()
          //  Draw flattened scene
          glPushMatrix();
          ShadowProjection(Position,E,N);
+         drawTableScene();
          drawScene();
          glPopMatrix();
          break;
@@ -720,6 +732,7 @@ void display()
          //  Draw flattened scene
          glPushMatrix();
          ShadowProjection(Position,E,N);
+         drawTableScene();
          drawScene();
          glPopMatrix();
          //  Make Z-buffer read-write
@@ -745,6 +758,7 @@ void display()
          //  Draw flattened scene
          glPushMatrix();
          ShadowProjection(Position,E,N);
+         drawTableScene();
          drawScene();
          glPopMatrix();
          //  Make Z-buffer and color buffer read-write
@@ -773,9 +787,99 @@ void display()
       default:
          break;
    }    
+
+   glClear(GL_STENCIL_BUFFER_BIT);
+   
+   if(twoShadows) {
+   //  Draw shadow
+   switch (mode)
+   {
+      //  No shadow
+      case 0:
+         break;
+      //  Draw flattened scene
+      case 1:
+         glPushMatrix();
+         ShadowProjection(Position,E2,N);
+         drawTableScene();
+         glPopMatrix();
+         break;
+      //  Transformation with lighting disabled
+      case 2:
+         glDisable(GL_LIGHTING);
+         //  Draw flattened scene
+         glPushMatrix();
+         ShadowProjection(Position,E2,N);
+         drawTableScene();
+         glPopMatrix();
+         break;
+      case 3:
+         glDisable(GL_LIGHTING);
+         //  Draw blended 
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         glColor4f(0,0,0,0.4);
+         //  Make Z-buffer read-only
+         glDepthMask(0);
+         //  Draw flattened scene
+         glPushMatrix();
+         ShadowProjection(Position,E2,N);
+         drawTableScene();
+         glPopMatrix();
+         //  Make Z-buffer read-write
+         glDepthMask(1);
+         break;
+      //  Blended with stencil buffer
+      case 4:
+         glDisable(GL_LIGHTING);
+         //  Enable stencil operations
+         glEnable(GL_STENCIL_TEST);
+
+         /*
+          *  Step 1:  Set stencil buffer to 1 where there are shadows
+          */
+         //  Existing value of stencil buffer doesn't matter
+         glStencilFunc(GL_ALWAYS,1,0xFFFFFFFF);
+         //  Set the value to 1 (REF=1 in StencilFunc)
+         //  only if Z-buffer would allow write
+         glStencilOp(GL_KEEP,GL_KEEP,GL_REPLACE);
+         //  Make Z-buffer and color buffer read-only
+         glDepthMask(0);
+         glColorMask(0,0,0,0);
+         //  Draw flattened scene
+         glPushMatrix();
+         ShadowProjection(Position,E2,N);
+         drawTableScene();
+         glPopMatrix();
+         //  Make Z-buffer and color buffer read-write
+         glDepthMask(1);
+         glColorMask(1,1,1,1);
+
+         /*
+          *  Step 2:  Draw shadow masked by stencil buffer
+          */
+         //  Set the stencil test draw where stencil buffer is > 0
+         glStencilFunc(GL_LESS,0,0xFFFFFFFF);
+         //  Make the stencil buffer read-only
+         glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
+         //  Enable blending
+         glEnable(GL_BLEND);
+         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+         glColor4f(0,0,0,0.5);
+         //  Draw the shadow over the entire floor
+         glBegin(GL_QUADS);
+         glVertex3f(-TABLE_WIDTH,-1,-TABLE_LENGTH);
+         glVertex3f(+TABLE_WIDTH,-1,-TABLE_LENGTH);
+         glVertex3f(+TABLE_WIDTH,-1,+TABLE_LENGTH);
+         glVertex3f(-TABLE_WIDTH,-1,+TABLE_LENGTH);
+         glEnd();
+         break;
+      default:
+         break;
+   }    
+   }
    //  Undo glEnables
    glPopAttrib();
-
  
    const double TOL = 0.1;
    if( pBall.y < -1 + TOL + BALL_RADIUS && pBall.vy < 0 
