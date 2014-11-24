@@ -41,7 +41,7 @@ const double Z0 = -6;
 #define CUP_HEIGHT 2.1
 #define GRAVITY -0.5
 #define TABLE_WIDTH 7*CUP_RADIUS
-#define TABLE_LENGTH Z0 - 3.5*R*sqrt(3)
+#define TABLE_LENGTH abs(Z0 - 4.5*R*sqrt(3))
 #define MODE 6
 
 char* text[]={"No shadows",
@@ -397,10 +397,10 @@ static void drawTable(double xCenter, double yCenter, double zCenter,
    drawCube(xCenter, yCenter, zCenter, width, height, length);
    glDisable(GL_POLYGON_OFFSET_FILL);
    double mid = 0.5*(Y_GROUND - 2);
-   drawCube(width - 0.5, mid, length + 0.5, 0.5, mid - Y_GROUND, 0.5);
-   drawCube(-width + 0.5, mid, length + 0.5, 0.5, mid - Y_GROUND, 0.5);
-   drawCube(width - 0.5, mid, -length - 0.5, 0.5, mid - Y_GROUND, 0.5);
-   drawCube(-width + 0.5, mid, -length - 0.5, 0.5, mid - Y_GROUND, 0.5);
+   drawCube(width - 0.5, mid, length - 0.5, 0.5, mid - Y_GROUND, 0.5);
+   drawCube(-width + 0.5, mid, length - 0.5, 0.5, mid - Y_GROUND, 0.5);
+   drawCube(width - 0.5, mid, -length + 0.5, 0.5, mid - Y_GROUND, 0.5);
+   drawCube(-width + 0.5, mid, -length + 0.5, 0.5, mid - Y_GROUND, 0.5);
 }
 
 void drawGround2()
@@ -790,7 +790,6 @@ void display()
 
    glClear(GL_STENCIL_BUFFER_BIT);
    
-   if(twoShadows) {
    //  Draw shadow
    switch (mode)
    {
@@ -876,7 +875,6 @@ void display()
          break;
       default:
          break;
-   }    
    }
    //  Undo glEnables
    glPopAttrib();
