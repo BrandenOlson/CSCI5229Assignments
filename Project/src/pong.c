@@ -12,12 +12,12 @@ int axes = 0;       //  Display axes
 int th = 0;         //  Azimuth of view angle
 int ph = 25;         //  Elevation of view angle
 int zh= 0;         //  Azimuth of light
-double ylight  =  5;  // Elevation of light
+double ylight  =  8;  // Elevation of light
 int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
-int mode = 0;
+int mode = 4;
 unsigned int canside, cantop, red, wood, grass, silver;  //  Textures
 
 // Light values
@@ -44,8 +44,6 @@ const double Z0 = -6;
 char* text[]={"No shadows",
               "Draw flattened scene",
               "Flattened scene with lighting disabled",
-              "Flattened scene with color grey color",
-              "Blended shadows",
               "Blended shadows with Z-buffer read-only",
               "Blended shadows with stencil buffer",
              };
@@ -398,11 +396,37 @@ static void drawTable(double xCenter, double yCenter, double zCenter,
    drawCube(-width + 0.5, mid, -length - 0.5, 0.5, mid - Y_GROUND, 0.5);
 }
 
+void drawGround2()
+{
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, grass);
+   glEnable(GL_POLYGON_OFFSET_FILL);
+   glPolygonOffset(1,1);
+   glNormal3f(0,1,0);
+   int i, j;
+   int delta = 5;
+   for (j = -GROUND_WIDTH; j < GROUND_WIDTH; j += delta)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (i = -GROUND_LENGTH; i <= GROUND_LENGTH; i += delta)
+      {
+         glTexCoord2f(i,j); glVertex3f(i,Y_GROUND,j);
+         glTexCoord2f(i,j + delta); glVertex3f(i,Y_GROUND,j + delta);
+      }
+      glEnd();
+   }
+   glDisable(GL_POLYGON_OFFSET_FILL);
+   glDisable(GL_TEXTURE_2D);
+}
+
 void drawGround()
 {
    glPushMatrix();
    glEnable(GL_TEXTURE_2D);
+   glEnable(GL_POLYGON_OFFSET_FILL);
+   glPolygonOffset(1,1);
    glBindTexture(GL_TEXTURE_2D, grass);
+   glNormal3f(0, 1, 0);
    float i, j;
    float delta = 0.4;
    for(i = -1; i <= 1 - delta; i += delta)
@@ -410,8 +434,6 @@ void drawGround()
       glBegin(GL_QUAD_STRIP);
       for(j = -1; j <= 1 - delta; j += delta)
       {
-         glNormal3f(0, 1, 0);
-         glColor3f(0, 0.7, 0);
          glTexCoord2f(0, 0);
          glVertex3f(i*GROUND_WIDTH, Y_GROUND, j*GROUND_LENGTH);
          glTexCoord2f(1, 0);
@@ -424,6 +446,7 @@ void drawGround()
       glEnd();
    }
    glDisable(GL_TEXTURE_2D);
+   glDisable(GL_POLYGON_OFFSET_FILL);
    glPopMatrix();
 }
 
@@ -625,7 +648,7 @@ void display()
    double Ey = +2*dim        *Sin(ph);
    double Ez = +2*dim*Cos(th)*Cos(ph);
    //  Erase the window and the depth buffer
-   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
    //  Enable Z-buffering in OpenGL
    glEnable(GL_DEPTH_TEST);
    //glEnable(GL_CULL_FACE);
@@ -686,31 +709,7 @@ void display()
          drawScene();
          glPopMatrix();
          break;
-      //  Set shadow color
       case 3:
-         glDisable(GL_LIGHTING);
-         glColor3f(0.3,0.3,0.3);
-         //  Draw flattened scene
-         glPushMatrix();
-         ShadowProjection(Position,E,N);
-         drawScene();
-         glPopMatrix();
-         break;
-      //  Blended shadows
-      case 4:
-         glDisable(GL_LIGHTING);
-         //  Blended color
-         glEnable(GL_BLEND);
-         glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-         glColor4f(0,0,0,0.4);
-         //  Draw flattened scene
-         glPushMatrix();
-         ShadowProjection(Position,E,N);
-         drawScene();
-         glPopMatrix();
-         break;
-      //  Blended shadows Z-buffer masked
-      case 5:
          glDisable(GL_LIGHTING);
          //  Draw blended 
          glEnable(GL_BLEND);
@@ -727,7 +726,7 @@ void display()
          glDepthMask(1);
          break;
       //  Blended with stencil buffer
-      case 6:
+      case 4:
          glDisable(GL_LIGHTING);
          //  Enable stencil operations
          glEnable(GL_STENCIL_TEST);
@@ -926,8 +925,8 @@ void mouse()
 void idle()
 {
    //  Elapsed time in seconds
-   //double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-   //zh = fmod(90*t, 360.0);
+   // double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
+   // zh = fmod(90*t, 360.0);
 
    pBall.x += pBall.vx;
    pBall.y += pBall.vy;
@@ -956,7 +955,7 @@ int main(int argc, char* argv[])
    //  Initialize GLUT
    glutInit(&argc, argv);
    //  Request double buffered, true color window with Z buffering at 600x600
-   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL | GLUT_DOUBLE);
    glutInitWindowSize(800, 600);
    glutCreateWindow("Party Time! (By Branden Olson)");
    //  Set callbacks
