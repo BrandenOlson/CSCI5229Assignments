@@ -493,9 +493,60 @@ static void drawKeg(double r, double h, double x, double y, double z)
       glVertex3d(HANDLE_RADIUS*Cos(theta), 0.97, HANDLE_RADIUS*Sin(theta));
    }
    glEnd();
+   glBegin(GL_QUAD_STRIP);
+   theta = 90;
+   for(; theta <= 230; theta += delta)
+   {
+      glNormal3f(Cos(theta), 0, Sin(theta));
+      step = (double)(theta - 90)/180;
+      glTexCoord2f(step, 0);
+      glVertex3d(0.9*Cos(theta), 0.9, 0.9*Sin(theta));
+      glTexCoord2f(step, 0.1);
+      glVertex3d(0.9*Cos(theta), 0.97, 0.9*Sin(theta));
+   }
+   glEnd();
+   glBegin(GL_QUAD_STRIP);
+   theta = 270;
+   for(; theta <= 410; theta += delta)
+   {
+      glNormal3f(Cos(theta), 0, Sin(theta));
+      step = (double)(theta - 270)/180;
+      glTexCoord2f(step, 0);
+      glVertex3d(0.9*Cos(theta), 0.9, 0.9*Sin(theta));
+      glTexCoord2f(step, 0.1);
+      glVertex3d(0.9*Cos(theta), 0.97, 0.9*Sin(theta));
+   }
+   glEnd();
+   glBegin(GL_QUADS);
+   glVertex3d(HANDLE_RADIUS*Cos(90), 0.9, HANDLE_RADIUS*Sin(90));
+   glVertex3d(0.9*Cos(90), 0.9, 0.9*Sin(90));
+   glVertex3d(0.9*Cos(90), 0.97, 0.9*Sin(90));
+   glVertex3d(HANDLE_RADIUS*Cos(90), 0.97, HANDLE_RADIUS*Sin(90));
+   glEnd();
+   glBegin(GL_QUADS);
+   glVertex3d(HANDLE_RADIUS*Cos(230), 0.9, HANDLE_RADIUS*Sin(230));
+   glVertex3d(0.9*Cos(230), 0.9, 0.9*Sin(230));
+   glVertex3d(0.9*Cos(230), 0.97, 0.9*Sin(230));
+   glVertex3d(HANDLE_RADIUS*Cos(230), 0.97, HANDLE_RADIUS*Sin(230));
+   glEnd();
+   glBegin(GL_QUADS);
+   glVertex3d(HANDLE_RADIUS*Cos(270), 0.9, HANDLE_RADIUS*Sin(270));
+   glVertex3d(0.9*Cos(270), 0.9, 0.9*Sin(270));
+   glVertex3d(0.9*Cos(270), 0.97, 0.9*Sin(270));
+   glVertex3d(HANDLE_RADIUS*Cos(270), 0.97, HANDLE_RADIUS*Sin(270));
+   glEnd();
+   glBegin(GL_QUADS);
+   glVertex3d(HANDLE_RADIUS*Cos(410), 0.9, HANDLE_RADIUS*Sin(410));
+   glVertex3d(0.9*Cos(410), 0.9, 0.9*Sin(410));
+   glVertex3d(0.9*Cos(410), 0.97, 0.9*Sin(410));
+   glVertex3d(HANDLE_RADIUS*Cos(410), 0.97, HANDLE_RADIUS*Sin(410));
+   glEnd();
    glDisable(GL_TEXTURE_2D);
    drawCylinder(1.05, 0.03, 0, 0.97, 0, silver, 0);
    drawCylinder(0.9, 0.03, 0, 0.97, 0, silver, 0);
+   glColor3f(0.5, 0.5, 0.5);
+   drawAnnulus(1.05, 1, 0, 0.90, 0, silver);
+   drawAnnulus(1.05, 0.9, 0, 0.97, 0, silver);
    drawAnnulus(1.05, 0.9, 0, 1, 0, silver);
    drawAnnulus(1, 0.01, 0, 0.90, 0, silver);
    drawCylinder(0.15, 0.1, 0, 0.90, 0, silver, 0);
@@ -741,6 +792,7 @@ void idle()
    glutPostRedisplay();
 }
 
+// Thanks to Dr. Schreuder for the LoadTexBMP function
 void loadTextures()
 {
    red = LoadTexBMP("images/red.bmp");
