@@ -21,7 +21,7 @@ double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
 int mode = 4;
-unsigned int canside, cantop, red, wood, grass, silver;  //  Textures
+unsigned int canside, cantop, red, wood, grass, silver, sky;  //  Textures
 
 // Light values
 int emission  =   0;  // Emission intensity (%)
@@ -32,6 +32,7 @@ int shininess =   0;  // Shininess (power of two)
 float shinyvec[1];    // Shininess (value)
 
 const double Z0 = -6;
+
 #define Y_GROUND -8
 #define GROUND_WIDTH 5*dim
 #define GROUND_LENGTH 5*dim
@@ -104,16 +105,68 @@ void makeShadowProjection(float L[4], float E[4], float N[4])
  *     at (x,y,z)
  *     radius r
  */
+
+void Vertex(double th,double ph)
+{
+   glTexCoord2d(th/360.0, ph/180.0 + 0.5);
+   glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
+}
+
 static void drawSphere(double x, double y, double z, double r)
 {
+   const int d = 5;
+   int th, ph = 0;
+
    //  Save transformation
    glPushMatrix();
-   //  Offset, scale and rotate
-   glTranslated(x,y,z);
-   glScaled(r,r,r);
-   //  White ball
-   glutSolidSphere(1.0, 16, 16);
-   //  Undo transofrmations
+   //  Offset and scale
+   glTranslated(x, y, z);
+   glScaled(r, r, r);
+
+   //  Latitude bands
+   for (ph = -90; ph < 90; ph += d)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (th=0; th<=360; th+=d)
+      {
+         Vertex(th, ph);
+         Vertex(th, ph+d);
+      }
+      glEnd();
+   }
+
+   //  Undo transformations
+   glPopMatrix();
+}
+
+static void drawSky(double x, double y, double z, double r)
+{
+   const int d = 5;
+   int th, ph = 0;
+
+   //  Save transformation
+   glPushMatrix();
+   //  Offset and scale
+   glTranslated(x, y, z);
+   glScaled(r, r, r);
+
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, sky);
+
+   //  Latitude bands. Start at 0 for a hemisphere (no need for full sphere)
+   for (ph = -90; ph < 90; ph += d)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (th=0; th<=360; th+=d)
+      {
+         Vertex(th, ph);
+         Vertex(th, ph+d);
+      }
+      glEnd();
+   }
+   glDisable(GL_TEXTURE_2D);
+
+   //  Undo transformations
    glPopMatrix();
 }
 
@@ -218,11 +271,11 @@ void drawTorus(double xCenter, double height, double zCenter,
          x1 = (rBig+ rSmall*Cos(phi))*Cos(theta);
          y = rSmall*Sin(phi);
          z1 = (rBig + rSmall*Cos(phi))*Sin(theta);
-         glNormal3f(x1, y, z1);
+         glNormal3f(Cos(phi)*Cos(theta), Sin(phi), Cos(phi)*Sin(theta));
          glVertex3d(x1, y, z1);
          x2 = (rBig + rSmall*Cos(phi))*Cos(theta + delta);
          z2 = (rBig + rSmall*Cos(phi))*Sin(theta + delta);
-         glNormal3f(x1, y, z1);
+         glNormal3f(Cos(phi)*Cos(theta + delta), Sin(phi), Cos(phi)*Sin(theta + delta));
          glVertex3d(x2, y, z2);
       }
       glEnd();
@@ -425,10 +478,10 @@ void drawGround()
    glNormal3f(0, 1, 0);
    float i, j;
    float delta = 0.4;
-   for(i = -1; i <= 1 - delta; i += delta)
+   for(i = -2; i <= 2 - delta; i += delta)
    {
       glBegin(GL_QUAD_STRIP);
-      for(j = -1; j <= 1 - delta; j += delta)
+      for(j = -2; j <= 2 - delta; j += delta)
       {
          glTexCoord2f(0, 0);
          glVertex3f(i*GROUND_WIDTH, Y_GROUND, j*GROUND_LENGTH);
@@ -462,7 +515,7 @@ void drawFence()
    float FENCE_X = 5*dim;
    float FENCE_Y = 7;
    float Y_MID = Y_GROUND + FENCE_Y;
-   float delta = 0.05;
+   float delta = 0.045;
    for(i = -1; i <= 1; i += delta)
    {
       if(i < -0.5 || i > 0.5) 
@@ -778,6 +831,7 @@ void display()
    //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
    //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
    
+   drawSky(0, 0, 0, 2*GROUND_LENGTH);
    drawGround();
    drawScene();
    drawTableScene();
@@ -954,6 +1008,7 @@ void loadTextures()
    wood = LoadTexBMP("images/wood.bmp");
    grass = LoadTexBMP("images/grass.bmp");
    silver = LoadTexBMP("images/scratch.bmp");
+   sky = LoadTexBMP("images/smallsky.bmp");
 }
 
 /*
