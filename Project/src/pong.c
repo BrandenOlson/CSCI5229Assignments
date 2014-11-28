@@ -33,7 +33,7 @@ float shinyvec[1];    // Shininess (value)
 
 const double Z0 = -6;
 
-#define Y_GROUND -8
+#define Y_GROUND -12
 #define GROUND_WIDTH 5*dim
 #define GROUND_LENGTH 5*dim
 #define CUP_RADIUS 0.7 
@@ -112,6 +112,12 @@ void Vertex(double th,double ph)
    glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
 }
 
+void skyVertex(double th,double ph)
+{
+   glTexCoord2d(th/180.0, ph/190.0 + 0.5);
+   glVertex3d(Sin(ph)*Cos(th) , Sin(th) , Cos(ph)*Cos(th));
+}
+
 static void drawSphere(double x, double y, double z, double r)
 {
    const int d = 5;
@@ -159,8 +165,8 @@ static void drawSky(double x, double y, double z, double r)
       glBegin(GL_QUAD_STRIP);
       for (th=0; th<=360; th+=d)
       {
-         Vertex(th, ph);
-         Vertex(th, ph+d);
+         skyVertex(th, ph);
+         skyVertex(th, ph+d);
       }
       glEnd();
    }
@@ -686,8 +692,8 @@ void drawTableScene()
 void drawScene()
 {
    drawFence();
-   drawKeg(2, 6, -11, Y_GROUND, -3);
-   drawKeg(2, 6, -11, Y_GROUND, 3);
+   drawKeg(2.5, 10, -13, Y_GROUND, -5);
+   drawKeg(2.5, 10, -13, Y_GROUND, 5);
 
    drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
 }
@@ -831,7 +837,7 @@ void display()
    //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
    //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
    
-   drawSky(0, 0, 0, 2*GROUND_LENGTH);
+   drawSky(0, -10, 0, 2*GROUND_LENGTH);
    drawGround();
    drawScene();
    drawTableScene();
@@ -1008,7 +1014,7 @@ void loadTextures()
    wood = LoadTexBMP("images/wood.bmp");
    grass = LoadTexBMP("images/grass.bmp");
    silver = LoadTexBMP("images/scratch.bmp");
-   sky = LoadTexBMP("images/smallsky.bmp");
+   sky = LoadTexBMP("images/skynight.bmp");
 }
 
 /*
