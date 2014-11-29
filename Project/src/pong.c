@@ -709,11 +709,11 @@ void drawLamp(double x, double y, double z)
    double BASE_RADIUS = 1.5;
    double BASE_HEIGHT = 2;
    double CYLINDER_HEIGHT = ylight - Y_GROUND - BASE_HEIGHT + 1;
-   glColor3f(0.439, 0.439, 0.439);
+   glColor3f(0.3, 0.5, 1);
    drawSlicedCone(CYLINDER_RADIUS, BASE_RADIUS, BASE_HEIGHT, 0, 0, 0);
    drawCylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, 0, BASE_HEIGHT, 0, silver, 
                 0); 
-   glColor3f(0.439, 0.439, 0.439);
+   glColor3f(0.3, 0.5, 1);
    drawLampHead(-1.44, CYLINDER_HEIGHT + 0.5, 0, 45, 0.2, 1, 2);
    glPopMatrix();
 }
@@ -749,6 +749,7 @@ void drawScene()
    drawKeg(2.5, 10, -13, Y_GROUND, 5);
 
    drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
+   drawLamp(LIGHT_RADIUS + 1, Y_GROUND, 0);
 
 }
 
@@ -896,7 +897,6 @@ void display()
    //  Draw scene
    drawSky(0, -10, 0, 2*GROUND_LENGTH);
    drawGround();
-   drawLamp(LIGHT_RADIUS + 1, Y_GROUND, 0);
    drawScene();
    drawTableScene();
 
