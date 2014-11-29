@@ -108,7 +108,7 @@ void makeShadowProjection(float L[4], float E[4], float N[4])
 
 void Vertex(double th,double ph)
 {
-   glTexCoord2d(th/360.0, ph/180.0 + 0.5);
+   glTexCoord2d(ph/360.0, th/180.0 + 0.5);
    glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
 }
 
@@ -681,7 +681,9 @@ void drawSlicedCone(double rSmall, double rBig, double height, double x,
    glBegin(GL_QUAD_STRIP);
    for(; theta <= 360; theta += delta)
    {
+      glNormal3f(1, 1, Sin(theta));
       glVertex3d(ratio*Cos(theta), 1, ratio*Sin(theta));
+      glNormal3f(1, 1, Sin(theta));
       glVertex3d(Cos(theta), 0, Sin(theta)); 
    }
    glEnd();
@@ -739,7 +741,11 @@ void drawTableScene()
       drawCup(CUP_RADIUS, CUP_HEIGHT, -3*R, -1, i*(Z0 - 3*R*sqrt(3)));
       drawCup(CUP_RADIUS, CUP_HEIGHT, +3*R, -1, i*(Z0 - 3*R*sqrt(3)));
    }
-  
+   if( pBall.active )
+   {
+      glColor3f(1, (float)153/255, (float)51/255);
+      drawSphere(pBall.x, pBall.y, pBall.z, BALL_RADIUS);
+   } 
 }
 
 void drawScene()
@@ -1036,7 +1042,7 @@ void resetBall()
    pBall.x = 0;
    pBall.vx = 0.0;
    pBall.y = 1;
-   pBall.vy = 2;
+   pBall.vy = 1;
    pBall.z = -Z0;
    pBall.vz = -1.5;
 }
