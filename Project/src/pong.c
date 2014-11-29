@@ -15,7 +15,7 @@ int th = 0;         //  Azimuth of view angle
 int ph = 25;         //  Elevation of view angle
 int zh= 0;         //  Azimuth of light
 double ylight  =  8;  // Elevation of light
-#define LIGHT_RADIUS dim/1.5
+#define LIGHT_RADIUS 10
 int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
@@ -114,8 +114,10 @@ void Vertex(double th,double ph)
 
 void skyVertex(double th,double ph)
 {
-   glTexCoord2d(th/180.0, ph/190.0 + 0.5);
-   glVertex3d(Sin(ph)*Cos(th) , Sin(th) , Cos(ph)*Cos(th));
+   glTexCoord2d(th/180.0, ph/190.0 + 0.5); // Divide ph by 190 instead of 180 
+                                           // to compensate for a weird strip 
+                                           // without texture
+   glVertex3d(Sin(ph)*Cos(th), Sin(th) , Cos(ph)*Cos(th));
 }
 
 static void drawSphere(double x, double y, double z, double r)
@@ -666,6 +668,56 @@ static void drawKeg(double r, double h, double x, double y, double z)
    glPopMatrix();
 }
 
+void drawSlicedCone(double rSmall, double rBig, double height, double x, 
+                    double y, double z)
+{
+   glPushMatrix();
+   glTranslated(x, y, z);
+   glScaled(rBig, height, rBig);
+
+   double ratio = rSmall/rBig;   
+   int theta = 0;
+   int delta = 10;
+   glBegin(GL_QUAD_STRIP);
+   for(; theta <= 360; theta += delta)
+   {
+      glVertex3d(ratio*Cos(theta), 1, ratio*Sin(theta));
+      glVertex3d(Cos(theta), 0, Sin(theta)); 
+   }
+   glEnd();
+
+   glPopMatrix();
+}
+
+void drawLampHead(double x, double y, double z, int rotation, double rSmall, 
+                  double rBig, double height)
+{
+   glPushMatrix();
+   glTranslated(x, y, z);
+   glRotated(rotation, 0, 0, -1);
+   drawSlicedCone(rSmall, rBig, height, 0, 0, 0);
+
+   glPopMatrix();
+}
+
+void drawLamp(double x, double y, double z)
+{
+   glPushMatrix();
+   glTranslated(x, y, z);
+
+   double CYLINDER_RADIUS = 0.1;
+   double BASE_RADIUS = 1.5;
+   double BASE_HEIGHT = 2;
+   double CYLINDER_HEIGHT = ylight - Y_GROUND - BASE_HEIGHT + 1;
+   glColor3f(0.439, 0.439, 0.439);
+   drawSlicedCone(CYLINDER_RADIUS, BASE_RADIUS, BASE_HEIGHT, 0, 0, 0);
+   drawCylinder(CYLINDER_RADIUS, CYLINDER_HEIGHT, 0, BASE_HEIGHT, 0, silver, 
+                0); 
+   glColor3f(0.439, 0.439, 0.439);
+   drawLampHead(-1.44, CYLINDER_HEIGHT + 0.5, 0, 45, 0.2, 1, 2);
+   glPopMatrix();
+}
+
 void drawTableScene()
 {
    drawCan(0.5, 2, 6*CUP_RADIUS, -1, -Z0 - sqrt(3));
@@ -687,6 +739,7 @@ void drawTableScene()
       drawCup(CUP_RADIUS, CUP_HEIGHT, -3*R, -1, i*(Z0 - 3*R*sqrt(3)));
       drawCup(CUP_RADIUS, CUP_HEIGHT, +3*R, -1, i*(Z0 - 3*R*sqrt(3)));
    }
+  
 }
 
 void drawScene()
@@ -696,6 +749,7 @@ void drawScene()
    drawKeg(2.5, 10, -13, Y_GROUND, 5);
 
    drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
+
 }
 
 void drawGroundShadows(float L[4], float E[4], float N[4])
@@ -821,7 +875,7 @@ void display()
    float Position[] = {LIGHT_RADIUS*Cos(zh), ylight, LIGHT_RADIUS*Sin(zh), 1};
    //  Draw light position as ball (still no lighting here)
    glColor3f(1, 1, 1);
-   drawSphere(Position[0], Position[1], Position[2], 0.1);
+   drawSphere(Position[0], Position[1], Position[2], 0.5);
    //  Enable lighting with normalization
    glEnable(GL_LIGHTING);
    glEnable(GL_NORMALIZE);
@@ -836,19 +890,21 @@ void display()
    glLightfv(GL_LIGHT0, GL_POSITION, Position);
    //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
    //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
+
+
    
+   //  Draw scene
    drawSky(0, -10, 0, 2*GROUND_LENGTH);
    drawGround();
+   drawLamp(LIGHT_RADIUS + 1, Y_GROUND, 0);
    drawScene();
    drawTableScene();
 
-   //  Save what is glEnabled
+   //  Draw shadows
    glPushAttrib(GL_ENABLE_BIT);
-   //  Draw shadow
    drawGroundShadows(Position, E, N);
    glClear(GL_STENCIL_BUFFER_BIT);
    drawTableShadows(Position, E2, N); 
-   //  Undo glEnables
    glPopAttrib();
  
    const double TOL = 0.1;
