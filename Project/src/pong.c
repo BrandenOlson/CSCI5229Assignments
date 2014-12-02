@@ -400,7 +400,7 @@ static void drawCup(double radius, double height,  double x, double y,          
    glPopMatrix();
 }
 
-static void drawCube(double x,double y,double z,
+void drawCube(double x,double y,double z,
                  double dx,double dy,double dz, int texture)
 {
    //  Save transformation
@@ -466,6 +466,65 @@ static void drawCube(double x,double y,double z,
    glDisable(GL_TEXTURE_2D);
 }
 
+void drawCubeWithoutTexture(double x,double y,double z,
+                 double dx,double dy,double dz)
+{
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glScaled(dx,dy,dz);
+   //  Front
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0, 1);
+   glVertex3f(-1,-1, 1);
+   glVertex3f(+1,-1, 1);
+   glVertex3f(+1,+1, 1);
+   glVertex3f(-1,+1, 1);
+   glEnd();
+   //  Back
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0,-1);
+   glVertex3f(+1,-1,-1);
+   glVertex3f(-1,-1,-1);
+   glVertex3f(-1,+1,-1);
+   glVertex3f(+1,+1,-1);
+   glEnd();
+   //  Right
+   glBegin(GL_QUADS);
+   glNormal3f(+1, 0, 0);
+   glVertex3f(+1,-1,+1);
+   glVertex3f(+1,-1,-1);
+   glVertex3f(+1,+1,-1);
+   glVertex3f(+1,+1,+1);
+   glEnd();
+   //  Left
+   glBegin(GL_QUADS);
+   glNormal3f(-1, 0, 0);
+   glVertex3f(-1,-1,-1);
+   glVertex3f(-1,-1,+1);
+   glVertex3f(-1,+1,+1);
+   glVertex3f(-1,+1,-1);
+   glEnd();
+   //  Top
+   glBegin(GL_QUADS);
+   glNormal3f( 0,+1, 0);
+   glVertex3f(-1,+1,+1);
+   glVertex3f(+1,+1,+1);
+   glVertex3f(+1,+1,-1);
+   glVertex3f(-1,+1,-1);
+   glEnd();
+   //  Bottom
+   glBegin(GL_QUADS);
+   glNormal3f( 0,-1, 0);
+   glVertex3f(-1,-1,-1);
+   glVertex3f(+1,-1,-1);
+   glVertex3f(+1,-1,+1);
+   glVertex3f(-1,-1,+1);
+   glEnd();
+   //  Undo transformations and textures
+   glPopMatrix();
+}
 static void drawWall()
 {
 
@@ -507,7 +566,6 @@ void drawRoof(double ROOF_BASE, double BASE_Z)
    float ROOF_TOP = ROOF_BASE + 7;
    float OFFSET = 12.0;
    float Y_MID = (ROOF_BASE + ROOF_TOP)/2.0;
-   float Z_MID = BASE_Z + OFFSET/2;
    glEnable(GL_TEXTURE_2D);
    glBindTexture(GL_TEXTURE_2D, shingle);
    glBegin(GL_QUAD_STRIP);
@@ -550,8 +608,8 @@ static void drawHouse()
    float ACCENT_WIDTH = 1;
    float ACCENT_HEIGHT = WALL_HEIGHT + 5;
    glColor3f(1, 1, 1);
-   drawCube(0, ACCENT_HEIGHT, FENCE_Z, FENCE_X, ACCENT_WIDTH, 
-            2, NULL);
+   drawCubeWithoutTexture(0, ACCENT_HEIGHT, FENCE_Z, FENCE_X, ACCENT_WIDTH, 
+            2);
    drawRoof(ACCENT_HEIGHT + ACCENT_WIDTH, FENCE_Z - ACCENT_WIDTH);
 }
 
@@ -1181,8 +1239,10 @@ int main(int argc, char* argv[])
    glutInit(&argc, argv);
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL | GLUT_DOUBLE);
-   glutInitWindowSize(800, 600);
-   glutCreateWindow("Party Time! (By Branden Olson)");
+   int width = glutGet(GLUT_SCREEN_WIDTH);
+   int height = glutGet(GLUT_SCREEN_HEIGHT);
+   glutInitWindowSize(width, height);
+   glutCreateWindow("Ready for the Weekend (By Branden Olson)");
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
