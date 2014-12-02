@@ -8,8 +8,6 @@
 #include "OlsonLib.h"
 #include "stdio.h"
 
-int twoShadows = 1;
-
 int axes = 0;       //  Display axes
 int th = 0;         //  Azimuth of view angle
 int ph = 25;         //  Elevation of view angle
@@ -21,7 +19,8 @@ double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
 int mode = 4;
-unsigned int canside, cantop, red, wood, grass, silver, sky;  //  Textures
+// Texture allocation
+unsigned int brick, canside, cantop, red, shingle, wood, grass, silver, sky;
 
 // Light values
 int emission  =   0;  // Emission intensity (%)
@@ -44,6 +43,11 @@ const double Z0 = -6;
 #define TABLE_WIDTH 7*CUP_RADIUS
 #define TABLE_LENGTH abs(Z0 - 4.5*R*sqrt(3))
 #define MODE 6
+#define FENCE_X 5*dim
+#define FENCE_Z 5*dim
+#define FENCE_Y 10 
+#define WALL_HEIGHT (Y_GROUND + 20)
+#define WALL_WIDTH FENCE_X
 
 char* text[]={"No shadows",
               "Draw flattened scene",
@@ -397,7 +401,7 @@ static void drawCup(double radius, double height,  double x, double y,          
 }
 
 static void drawCube(double x,double y,double z,
-                 double dx,double dy,double dz)
+                 double dx,double dy,double dz, int texture)
 {
    //  Save transformation
    glPushMatrix();
@@ -408,7 +412,7 @@ static void drawCube(double x,double y,double z,
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
    glColor3f(1,1,1);
-   glBindTexture(GL_TEXTURE_2D,wood);
+   glBindTexture(GL_TEXTURE_2D,texture);
    //  Front
    glBegin(GL_QUADS);
    glNormal3f( 0, 0, 1);
@@ -462,18 +466,107 @@ static void drawCube(double x,double y,double z,
    glDisable(GL_TEXTURE_2D);
 }
 
+static void drawWall()
+{
+
+   glPushMatrix();
+   glEnable(GL_TEXTURE_2D);
+   glEnable(GL_POLYGON_OFFSET_FILL);
+   glPolygonOffset(1,1);
+   glBindTexture(GL_TEXTURE_2D, brick);
+   glNormal3f(0, 0, -1);
+   float i, j;
+   float delta = 0.2;
+   float ydelta = 6;
+   float texCoord = ydelta/10.0;
+   for(i = -1; i <= 1 - delta; i += delta)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for(j = Y_GROUND; j <= WALL_HEIGHT; j += ydelta)
+      {
+         glTexCoord2f(0, 0);
+         glVertex3f(i*WALL_WIDTH, j, FENCE_Z);
+         glTexCoord2f(1, 0);
+         glVertex3f((i + delta)*WALL_WIDTH, j, FENCE_Z);
+         glTexCoord2f(0, texCoord);
+         glVertex3f(i*WALL_WIDTH, (j + ydelta), FENCE_Z);
+         glTexCoord2f(1, texCoord);
+         glVertex3f((i + delta)*WALL_WIDTH, (j + ydelta), FENCE_Z);
+      }
+      glEnd();
+   }
+   glDisable(GL_TEXTURE_2D);
+   glDisable(GL_POLYGON_OFFSET_FILL);
+   glPopMatrix();
+   
+}
+
+void drawRoof(double ROOF_BASE, double BASE_Z)
+{
+   glPushMatrix();
+   float ROOF_TOP = ROOF_BASE + 7;
+   float OFFSET = 12.0;
+   float Y_MID = (ROOF_BASE + ROOF_TOP)/2.0;
+   float Z_MID = BASE_Z + OFFSET/2;
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, shingle);
+   glBegin(GL_QUAD_STRIP);
+   float i = 1.0;
+   float delta = 0.2;
+   for(; i >= -1 + delta; i -= delta)
+   {
+      glTexCoord2f(0, 0);
+      glVertex3f(i*FENCE_X, ROOF_BASE, BASE_Z);
+      glTexCoord2f(0, 1);
+      glVertex3f(i*FENCE_X, Y_MID, BASE_Z + OFFSET/2);
+      glTexCoord2f(1, 0);
+      glVertex3f((i - delta)*FENCE_X, ROOF_BASE, BASE_Z);
+      glTexCoord2f(1, 1);
+      glVertex3f((i - delta)*FENCE_X, Y_MID, BASE_Z + OFFSET/2);
+   }
+   glEnd();
+   i = 1.0;
+   delta = 0.2;
+   glBegin(GL_QUAD_STRIP);
+   for(; i >= -1 + delta; i -= delta)
+   {
+      glTexCoord2f(0, 0);
+      glVertex3f(i*FENCE_X, Y_MID, BASE_Z + OFFSET/2);
+      glTexCoord2f(0, 1);
+      glVertex3f(i*FENCE_X, ROOF_TOP, BASE_Z + OFFSET);
+      glTexCoord2f(1, 0);
+      glVertex3f((i - delta)*FENCE_X, Y_MID, BASE_Z + OFFSET/2);
+      glTexCoord2f(1, 1);
+      glVertex3f((i - delta)*FENCE_X, ROOF_TOP, BASE_Z + OFFSET);
+   }
+   glEnd();
+   glDisable(GL_TEXTURE_2D);
+   glPopMatrix();
+}
+
+static void drawHouse()
+{
+   drawWall();
+   float ACCENT_WIDTH = 1;
+   float ACCENT_HEIGHT = WALL_HEIGHT + 5;
+   glColor3f(1, 1, 1);
+   drawCube(0, ACCENT_HEIGHT, FENCE_Z, FENCE_X, ACCENT_WIDTH, 
+            2, NULL);
+   drawRoof(ACCENT_HEIGHT + ACCENT_WIDTH, FENCE_Z - ACCENT_WIDTH);
+}
+
 static void drawTable(double xCenter, double yCenter, double zCenter, 
                       double width, double height, double length)
 {
    glEnable(GL_POLYGON_OFFSET_FILL);
    glPolygonOffset(0.5, 0.5);
-   drawCube(xCenter, yCenter, zCenter, width, height, length);
+   drawCube(xCenter, yCenter, zCenter, width, height, length, wood);
    glDisable(GL_POLYGON_OFFSET_FILL);
    double mid = 0.5*(Y_GROUND - 2);
-   drawCube(width - 0.5, mid, length - 0.5, 0.5, mid - Y_GROUND, 0.5);
-   drawCube(-width + 0.5, mid, length - 0.5, 0.5, mid - Y_GROUND, 0.5);
-   drawCube(width - 0.5, mid, -length + 0.5, 0.5, mid - Y_GROUND, 0.5);
-   drawCube(-width + 0.5, mid, -length + 0.5, 0.5, mid - Y_GROUND, 0.5);
+   drawCube(width - 1, mid, length - 1, 0.5, mid - Y_GROUND, 0.5, wood);
+   drawCube(-width + 1, mid, length - 1, 0.5, mid - Y_GROUND, 0.5, wood);
+   drawCube(width - 1, mid, -length + 1, 0.5, mid - Y_GROUND, 0.5, wood);
+   drawCube(-width + 1, mid, -length + 1, 0.5, mid - Y_GROUND, 0.5, wood);
 }
 
 void drawGround()
@@ -510,7 +603,7 @@ void drawGround()
 void drawPost(double x, double y, double z, double dx, double dy, double dz)
 {
    glPushMatrix();
-   drawCube(x, y, z, dx, dy, dz); 
+   drawCube(x, y, z, dx, dy, dz, wood); 
    glPopMatrix();
 }
 
@@ -519,28 +612,25 @@ void drawFence()
    glPushMatrix();
 
    float i;
-   float FENCE_Z = 5*dim;
-   float FENCE_X = 5*dim;
-   float FENCE_Y = 7;
    float Y_MID = Y_GROUND + FENCE_Y;
    float delta = 0.045;
    for(i = -1; i <= 1; i += delta)
    {
-      if(i < -0.5 || i > 0.5) 
-      {
-         drawPost(i*FENCE_X, Y_MID, FENCE_Z, 1, FENCE_Y, 0.3);
-      }
+     // if(i < -0.5 || i > 0.5) 
+     // {
+     //    drawPost(i*FENCE_X, Y_MID, FENCE_Z, 1, FENCE_Y, 0.3);
+     // }
       drawPost(i*FENCE_X, Y_MID, -FENCE_Z, 1, FENCE_Y, 0.3);
       drawPost(FENCE_X, Y_MID, i*FENCE_Z, 0.3, FENCE_Y, 1);
       drawPost(-FENCE_X, Y_MID, i*FENCE_Z, 0.3, FENCE_Y, 1);
    }
    glPopMatrix();
-   drawPost(0, Y_MID + 3, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
-   drawPost(0, Y_MID - 3, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
-   drawPost(-FENCE_X, Y_MID + 3, 0, 0.5, 0.5, FENCE_Z);
-   drawPost(-FENCE_X, Y_MID - 3, 0, 0.5, 0.5, FENCE_Z);
-   drawPost(FENCE_X, Y_MID + 3, 0, 0.5, 0.5, FENCE_Z);
-   drawPost(FENCE_X, Y_MID - 3, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(0, Y_MID + 5, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
+   drawPost(0, Y_MID - 5, -FENCE_Z + 0.5, FENCE_X, 0.5, 0.5);
+   drawPost(-FENCE_X, Y_MID + 5, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(-FENCE_X, Y_MID - 5, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(FENCE_X, Y_MID + 5, 0, 0.5, 0.5, FENCE_Z);
+   drawPost(FENCE_X, Y_MID - 5, 0, 0.5, 0.5, FENCE_Z);
 }
 
 static void drawAnnulus(double rBig, double rSmall, double x, double y, 
@@ -751,6 +841,7 @@ void drawTableScene()
 void drawScene()
 {
    drawFence();
+   drawHouse();
    drawKeg(2.5, 10, -13, Y_GROUND, -5);
    drawKeg(2.5, 10, -13, Y_GROUND, 5);
 
@@ -1074,9 +1165,11 @@ void loadTextures()
    canside = LoadTexBMP("images/can2.bmp");
    cantop = LoadTexBMP("images/beercan.bmp");
    wood = LoadTexBMP("images/wood.bmp");
+   brick = LoadTexBMP("images/brick.bmp");
    grass = LoadTexBMP("images/grass.bmp");
    silver = LoadTexBMP("images/scratch.bmp");
    sky = LoadTexBMP("images/skynight.bmp");
+   shingle = LoadTexBMP("images/shingle.bmp");
 }
 
 /*
