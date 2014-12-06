@@ -2,7 +2,6 @@
    by Branden Olson
 */
 
-
 #define PI 3.1415927
 #include "CSCIx229.h"
 #include "OlsonLib.h"
@@ -20,7 +19,7 @@ double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
 int mode = 4;
 // Texture allocation
-unsigned int brick, canside, cantop, red, shingle, wood, grass, silver, sky;
+unsigned int brick, canside, cantop, red, shingle, wood, door, grass, silver, sky;
 
 // Light values
 int emission  =   0;  // Emission intensity (%)
@@ -611,6 +610,31 @@ static void drawHouse()
    drawCubeWithoutTexture(0, ACCENT_HEIGHT, FENCE_Z, FENCE_X, ACCENT_WIDTH, 
             2);
    drawRoof(ACCENT_HEIGHT + ACCENT_WIDTH, FENCE_Z - ACCENT_WIDTH);
+
+   // Draw door
+   float DOOR_HEIGHT = ACCENT_HEIGHT - 4;
+   float DOOR_WIDTH = 6;
+   drawCubeWithoutTexture(0, DOOR_HEIGHT, FENCE_Z, DOOR_WIDTH, 0.5,
+                          1); 
+   drawCubeWithoutTexture(-DOOR_WIDTH + 0.5, (DOOR_HEIGHT + Y_GROUND)/2, 
+                          FENCE_Z, 0.5, (DOOR_HEIGHT - Y_GROUND)/2, 1);
+   drawCubeWithoutTexture(DOOR_WIDTH - 0.5, (DOOR_HEIGHT + Y_GROUND)/2, 
+                          FENCE_Z, 0.5, (DOOR_HEIGHT - Y_GROUND)/2, 1);
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D, door);
+   glBegin(GL_QUADS);
+   // Converted bmp format was behaving strangely. Using 0.1 instead of 0 for
+   // the LHS seems to work
+   glTexCoord2f(0.1, 0);
+   glVertex3f(DOOR_WIDTH - 1, Y_GROUND, FENCE_Z);
+   glTexCoord2f(1, 0);
+   glVertex3f(1 - DOOR_WIDTH, Y_GROUND, FENCE_Z);
+   glTexCoord2f(1, 1);
+   glVertex3f(1 - DOOR_WIDTH, DOOR_HEIGHT, FENCE_Z);
+   glTexCoord2f(0.1, 1);
+   glVertex3f(DOOR_WIDTH - 1, DOOR_HEIGHT, FENCE_Z);
+   glEnd();
+   glDisable(GL_TEXTURE_2D);
 }
 
 static void drawTable(double xCenter, double yCenter, double zCenter, 
@@ -1228,6 +1252,7 @@ void loadTextures()
    silver = LoadTexBMP("images/scratch.bmp");
    sky = LoadTexBMP("images/skynight.bmp");
    shingle = LoadTexBMP("images/shingle.bmp");
+   door = LoadTexBMP("images/door.bmp");
 }
 
 /*
