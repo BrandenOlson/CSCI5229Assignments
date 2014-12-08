@@ -264,6 +264,28 @@ static void drawCylinder(double r, double h, double x, double y, double z,
    glPopMatrix();
 }
 
+// Thanks to mrmoo on opengl.org for help with this
+void drawCylinderWithoutTexture(double r, double h, double x, double y, 
+                                double z, int rotation)
+{
+   const int SIDE_COUNT = 100;
+   glPushMatrix();
+
+   glTranslated(x, y, z);
+   glRotated(rotation, 1, 1, 0); 
+   glScaled(r, h, r);
+
+   glBegin(GL_QUAD_STRIP); 
+   int i = 0;
+   for (; i <= SIDE_COUNT; i++) {     
+       float angle = i*((1.0/SIDE_COUNT) * (2*PI));
+       glNormal3d( cos(angle), 0, sin(angle) );
+       glVertex3d( 1*cos(angle), 1, 1*sin(angle) );
+       glVertex3d( 1*cos(angle), 0, 1*sin(angle) );   }
+   glEnd();
+   glPopMatrix();
+}
+
 void drawTorus(double xCenter, double height, double zCenter,
                     double rSmall, double rBig)
 {
@@ -635,6 +657,27 @@ static void drawHouse()
    glVertex3f(DOOR_WIDTH - 1, DOOR_HEIGHT, FENCE_Z);
    glEnd();
    glDisable(GL_TEXTURE_2D);
+
+   // Draw windows
+   float WINDOW_TOP = DOOR_HEIGHT;
+   float WINDOW_BOTTOM = DOOR_HEIGHT - 10;
+   float WINDOW_WIDTH = 10;
+   float WINDOW_OFFSET = 30;
+   int i;
+   for(i = 1; i >= -1; i -= 2)
+   {
+      WINDOW_OFFSET *= i;
+      drawCubeWithoutTexture(WINDOW_OFFSET, WINDOW_TOP, FENCE_Z,
+                             WINDOW_WIDTH, 0.5, 1);
+      drawCubeWithoutTexture(WINDOW_OFFSET, WINDOW_BOTTOM, FENCE_Z,
+                             WINDOW_WIDTH, 0.5, 1);
+      drawCubeWithoutTexture(WINDOW_OFFSET + WINDOW_WIDTH - 0.5, 
+                             (WINDOW_TOP + WINDOW_BOTTOM)/2,
+                             FENCE_Z, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2, 1);
+      drawCubeWithoutTexture(WINDOW_OFFSET - WINDOW_WIDTH + 0.5, 
+                             (WINDOW_TOP + WINDOW_BOTTOM)/2,
+                             FENCE_Z, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2, 1);
+   }
 }
 
 static void drawTable(double xCenter, double yCenter, double zCenter, 
@@ -874,6 +917,53 @@ void drawLampHead(double x, double y, double z, int rotation, double rSmall,
    glPopMatrix();
 }
 
+void drawQuarterTorus(double xCenter, double height, double zCenter,
+                    double rSmall, double rBig)
+{
+   glPushMatrix();
+   glTranslated(xCenter, height, zCenter);
+   double x1, x2, y, z1, z2;
+   int theta = 0;
+   int phi;
+   int delta = 5;
+   for(; theta <= 90 - delta; theta += delta)
+   {
+      glBegin(GL_QUAD_STRIP);
+      phi = 0;
+      for(; phi <= 90; phi += 2*delta)
+      {
+         x1 = (rBig+ rSmall*Cos(phi))*Cos(theta);
+         y = rSmall*Sin(phi);
+         z1 = (rBig + rSmall*Cos(phi))*Sin(theta);
+         glNormal3f(Cos(phi)*Cos(theta), Sin(phi), Cos(phi)*Sin(theta));
+         glVertex3d(x1, y, z1);
+         x2 = (rBig + rSmall*Cos(phi))*Cos(theta + delta);
+         z2 = (rBig + rSmall*Cos(phi))*Sin(theta + delta);
+         glNormal3f(Cos(phi)*Cos(theta + delta), Sin(phi), Cos(phi)*Sin(theta + delta));
+         glVertex3d(x2, y, z2);
+      }
+      glEnd();
+   }
+   glPopMatrix();
+}
+
+void drawCord(float x, float y, float z)
+{
+   glPushMatrix();
+  
+   glRotated(90, 1, 0, 0);
+   glColor3f(0.0f, 0.0f, 0.0f);
+   float Z1 = FENCE_Z/4;
+   float radius = 2;
+   float X1 = radius ;
+   float Y = Y_GROUND + 0.05;
+   drawCylinderWithoutTexture(0.1, Z1, 0, 0, 0, 0);
+   drawQuarterTorus(0, Z1 + radius, 0, 0.1, radius); 
+ 
+   glPopMatrix();
+}
+
+
 void drawLamp(double x, double y, double z)
 {
    glPushMatrix();
@@ -889,6 +979,7 @@ void drawLamp(double x, double y, double z)
                 0); 
    glColor3f(0.3, 0.5, 1);
    drawLampHead(-1.44, CYLINDER_HEIGHT + 0.5, 0, 45, 0.2, 1, 2);
+   drawCord(x, y, z);
    glPopMatrix();
 }
 
