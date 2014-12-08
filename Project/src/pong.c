@@ -19,7 +19,8 @@ double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
 int mode = 4;
 // Texture allocation
-unsigned int brick, canside, cantop, red, shingle, wood, door, grass, silver, sky;
+unsigned int brick, canside, cantop, red, shingle, wood, door, blinds, grass, 
+             silver, sky;
 
 // Light values
 int emission  =   0;  // Emission intensity (%)
@@ -677,6 +678,30 @@ static void drawHouse()
       drawCubeWithoutTexture(WINDOW_OFFSET - WINDOW_WIDTH + 0.5, 
                              (WINDOW_TOP + WINDOW_BOTTOM)/2,
                              FENCE_Z, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2, 1);
+      float WINDOW_MID = (WINDOW_TOP + WINDOW_BOTTOM)/2;
+      glEnable(GL_TEXTURE_2D);
+      glBindTexture(GL_TEXTURE_2D, blinds);
+      glBegin(GL_QUADS);
+      glTexCoord2f(0, 0);
+      glVertex3f(WINDOW_WIDTH + WINDOW_OFFSET - 1, WINDOW_BOTTOM, FENCE_Z);
+      glTexCoord2f(1, 0);
+      glVertex3f(1 - WINDOW_WIDTH + WINDOW_OFFSET, WINDOW_BOTTOM, FENCE_Z);
+      glTexCoord2f(1, 1);
+      glVertex3f(1 - WINDOW_WIDTH + WINDOW_OFFSET, WINDOW_MID, FENCE_Z);
+      glTexCoord2f(0, 1);
+      glVertex3f(WINDOW_WIDTH + WINDOW_OFFSET - 1, WINDOW_MID, FENCE_Z);
+      glEnd();
+      glBegin(GL_QUADS);
+      glTexCoord2f(0, 0);
+      glVertex3f(WINDOW_WIDTH + WINDOW_OFFSET - 1, WINDOW_MID, FENCE_Z);
+      glTexCoord2f(1, 0);
+      glVertex3f(1 - WINDOW_WIDTH + WINDOW_OFFSET, WINDOW_MID, FENCE_Z);
+      glTexCoord2f(1, 1);
+      glVertex3f(1 - WINDOW_WIDTH + WINDOW_OFFSET, WINDOW_TOP, FENCE_Z);
+      glTexCoord2f(0, 1);
+      glVertex3f(WINDOW_WIDTH + WINDOW_OFFSET - 1, WINDOW_TOP, FENCE_Z);
+      glEnd();
+      glDisable(GL_TEXTURE_2D);
    }
 }
 
@@ -1344,6 +1369,7 @@ void loadTextures()
    sky = LoadTexBMP("images/skynight.bmp");
    shingle = LoadTexBMP("images/shingle.bmp");
    door = LoadTexBMP("images/door.bmp");
+   blinds = LoadTexBMP("images/blinds.bmp");
 }
 
 /*
