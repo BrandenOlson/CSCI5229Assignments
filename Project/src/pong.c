@@ -69,6 +69,14 @@ typedef struct ball {
 
 ball pBall;
 
+materialStruct plastic =
+{
+   {0.1, 0.1, 0.1, 1.0},
+   {0.6, 0.0, 0.0, 1.0},
+   {0.8, 0.6, 0.6, 1.0},
+   30.8
+};
+
 materialStruct metal =
 {
    {0.33, 0.22, 0.03, 1.0},
@@ -112,7 +120,7 @@ void makeShadowProjection(float L[4], float E[4], float N[4])
 
 void Vertex(double th,double ph)
 {
-   glTexCoord2d(ph/360.0, th/180.0 + 0.5);
+   glNormal3d(Sin(th)*Cos(ph), Sin(ph), Cos(th)*(Cos(ph)));
    glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
 }
 
@@ -489,12 +497,14 @@ void drawCube(double x,double y,double z,
 }
 
 void drawCubeWithoutTexture(double x,double y,double z,
-                 double dx,double dy,double dz)
+                 double dx,double dy,double dz,
+                 int rotation)
 {
    //  Save transformation
    glPushMatrix();
    //  Offset, scale and rotate
    glTranslated(x,y,z);
+   glRotated(rotation, 0, 1, 0);
    glScaled(dx,dy,dz);
    //  Front
    glBegin(GL_QUADS);
@@ -631,18 +641,18 @@ static void drawHouse()
    float ACCENT_HEIGHT = WALL_HEIGHT + 5;
    glColor3f(1, 1, 1);
    drawCubeWithoutTexture(0, ACCENT_HEIGHT, FENCE_Z, FENCE_X, ACCENT_WIDTH, 
-            2);
+            2, 0);
    drawRoof(ACCENT_HEIGHT + ACCENT_WIDTH, FENCE_Z - ACCENT_WIDTH);
 
    // Draw door
    float DOOR_HEIGHT = ACCENT_HEIGHT - 4;
    float DOOR_WIDTH = 6;
    drawCubeWithoutTexture(0, DOOR_HEIGHT, FENCE_Z, DOOR_WIDTH, 0.5,
-                          1); 
+                          1, 0); 
    drawCubeWithoutTexture(-DOOR_WIDTH + 0.5, (DOOR_HEIGHT + Y_GROUND)/2, 
-                          FENCE_Z, 0.5, (DOOR_HEIGHT - Y_GROUND)/2, 1);
+                          FENCE_Z, 0.5, (DOOR_HEIGHT - Y_GROUND)/2, 1, 0);
    drawCubeWithoutTexture(DOOR_WIDTH - 0.5, (DOOR_HEIGHT + Y_GROUND)/2, 
-                          FENCE_Z, 0.5, (DOOR_HEIGHT - Y_GROUND)/2, 1);
+                          FENCE_Z, 0.5, (DOOR_HEIGHT - Y_GROUND)/2, 1, 0);
    glEnable(GL_TEXTURE_2D);
    glBindTexture(GL_TEXTURE_2D, door);
    glBegin(GL_QUADS);
@@ -669,15 +679,17 @@ static void drawHouse()
    {
       WINDOW_OFFSET *= i;
       drawCubeWithoutTexture(WINDOW_OFFSET, WINDOW_TOP, FENCE_Z,
-                             WINDOW_WIDTH, 0.5, 1);
+                             WINDOW_WIDTH, 0.5, 1, 0);
       drawCubeWithoutTexture(WINDOW_OFFSET, WINDOW_BOTTOM, FENCE_Z,
-                             WINDOW_WIDTH, 0.5, 1);
+                             WINDOW_WIDTH, 0.5, 1, 0);
       drawCubeWithoutTexture(WINDOW_OFFSET + WINDOW_WIDTH - 0.5, 
                              (WINDOW_TOP + WINDOW_BOTTOM)/2,
-                             FENCE_Z, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2, 1);
+                             FENCE_Z, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2, 
+                             1, 0);
       drawCubeWithoutTexture(WINDOW_OFFSET - WINDOW_WIDTH + 0.5, 
                              (WINDOW_TOP + WINDOW_BOTTOM)/2,
-                             FENCE_Z, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2, 1);
+                             FENCE_Z, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2, 
+                             1, 0);
       float WINDOW_MID = (WINDOW_TOP + WINDOW_BOTTOM)/2;
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, blinds);
@@ -938,33 +950,44 @@ void drawLampHead(double x, double y, double z, int rotation, double rSmall,
    glTranslated(x, y, z);
    glRotated(rotation, 0, 0, -1);
    drawSlicedCone(rSmall, rBig, height, 0, 0, 0);
+   drawCylinderWithoutTexture(rSmall, 0.3, 0, height, 0, 0);
+   glDisable(GL_LIGHTING);
+   glBegin(GL_TRIANGLE_FAN);
+   glVertex3f(0, height + 0.3, 0);
+   int theta = 0;
+   for(; theta <= 360; theta += 20)
+   {
+      glVertex3f(1.01*rSmall*Cos(theta), height + 0.3, 1.01*rSmall*Sin(theta));
+   }
+   glEnd();
+   glEnable(GL_LIGHTING);
 
    glPopMatrix();
 }
 
 void drawQuarterTorus(double xCenter, double height, double zCenter,
-                    double rSmall, double rBig)
+                    double rSmall, double rBig, int thetaStart)
 {
    glPushMatrix();
    glTranslated(xCenter, height, zCenter);
    double x1, x2, y, z1, z2;
-   int theta = 0;
+   int theta = thetaStart;
    int phi;
    int delta = 5;
-   for(; theta <= 90 - delta; theta += delta)
+   for(; theta <= thetaStart + 90 - delta; theta += delta)
    {
       glBegin(GL_QUAD_STRIP);
       phi = 0;
-      for(; phi <= 90; phi += 2*delta)
+      for(; phi <= 360; phi += 2*delta)
       {
          x1 = (rBig+ rSmall*Cos(phi))*Cos(theta);
          y = rSmall*Sin(phi);
          z1 = (rBig + rSmall*Cos(phi))*Sin(theta);
-         glNormal3f(Cos(phi)*Cos(theta), Sin(phi), Cos(phi)*Sin(theta));
+     //    glNormal3f(Cos(phi)*Cos(theta), Sin(phi), Cos(phi)*Sin(theta));
          glVertex3d(x1, y, z1);
          x2 = (rBig + rSmall*Cos(phi))*Cos(theta + delta);
          z2 = (rBig + rSmall*Cos(phi))*Sin(theta + delta);
-         glNormal3f(Cos(phi)*Cos(theta + delta), Sin(phi), Cos(phi)*Sin(theta + delta));
+      //   glNormal3f(Cos(phi)*Cos(theta + delta), Sin(phi), Cos(phi)*Sin(theta + delta));
          glVertex3d(x2, y, z2);
       }
       glEnd();
@@ -972,18 +995,44 @@ void drawQuarterTorus(double xCenter, double height, double zCenter,
    glPopMatrix();
 }
 
-void drawCord(float x, float y, float z)
+void drawCord()
 {
    glPushMatrix();
   
-   glRotated(90, 1, 0, 0);
-   glColor3f(0.0f, 0.0f, 0.0f);
-   float Z1 = FENCE_Z/4;
-   float radius = 2;
-   float X1 = radius ;
-   float Y = Y_GROUND + 0.05;
-   drawCylinderWithoutTexture(0.1, Z1, 0, 0, 0, 0);
-   drawQuarterTorus(0, Z1 + radius, 0, 0.1, radius); 
+   materials(&plastic);
+
+   glColor3f(0, 0, 0);
+   int t = 0;
+   int delta = 10;
+   float amplitude = 3;
+   float rSmall = 0.1;
+   double x1, x2, z1, z2, phi;
+   double y = Y_GROUND + 1;
+   // Make the cord follow a cylindrical sine pattern
+   for(; t <= 450 - delta; t += delta)
+   {
+      if(180 == t) 
+      {
+         drawCubeWithoutTexture((x1 + x2)/2, y, (z1 + z2)/2, 0.2, 0.2, 0.2, 45);
+         glColor3f(1, (float)102/255, 0);
+         drawCubeWithoutTexture(x2, y, z2, 0.2, 0.2, 0.2, 45);
+      }
+      glBegin(GL_QUAD_STRIP);
+      phi = 0;
+      for(; phi <= 360; phi += delta)
+      {
+         x1 = amplitude*Sin(t) + rSmall*Cos(phi);
+         y = rSmall*Sin(phi);
+         z1 = 4*2*PI*(float)t/360;
+         glVertex3f(x1, y, z1);
+         x2 = amplitude*Sin(t + delta) + rSmall*Cos(phi);
+         z2 = 4*2*PI*(float)(t + delta)/360;
+         glVertex3f(x2, y, z2);
+      }
+      glEnd();
+   }
+   float radius = 15.0 ;
+   drawQuarterTorus(amplitude + radius, y, z2, rSmall, radius, 90);  
  
    glPopMatrix();
 }
@@ -1004,7 +1053,7 @@ void drawLamp(double x, double y, double z)
                 0); 
    glColor3f(0.3, 0.5, 1);
    drawLampHead(-1.44, CYLINDER_HEIGHT + 0.5, 0, 45, 0.2, 1, 2);
-   drawCord(x, y, z);
+   drawCord();
    glPopMatrix();
 }
 
@@ -1176,6 +1225,7 @@ void display()
    glEnable(GL_LIGHTING);
    glEnable(GL_NORMALIZE);
    //  glColor sets ambient and diffuse color materials
+   glColorMaterial(GL_FRONT_AND_BACK, GL_SPECULAR);
    glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
    glEnable(GL_COLOR_MATERIAL);
    //  Enable light 0
@@ -1215,7 +1265,7 @@ void display()
       pBall.vy *= 0.7;
       pBall.vy = -pBall.vy;
    } 
-   if ( abs(pBall.y + 5) < -10 )
+   if ( pBall.y < Y_GROUND )
    {
        pBall.active = 0;
    }
@@ -1345,7 +1395,7 @@ void mouse()
 void idle()
 {
    //  Elapsed time in seconds
-   // double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
+   double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
    // zh = fmod(90*t, 360.0);
 
    pBall.x += pBall.vx;
