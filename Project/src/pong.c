@@ -11,7 +11,7 @@ int axes = 0;       //  Display axes
 int th = 0;         //  Azimuth of view angle
 int ph = 25;         //  Elevation of view angle
 int zh= 0;         //  Azimuth of light
-double ylight  =  8;  // Elevation of light
+double ylight  =  7;  // Elevation of light
 #define LIGHT_RADIUS 10
 int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
@@ -45,8 +45,8 @@ const double Z0 = -6;
 #define MODE 6
 #define FENCE_X 5*dim
 #define FENCE_Z 5*dim
-#define FENCE_Y 10 
-#define WALL_HEIGHT (Y_GROUND + 20)
+#define FENCE_Y 12 
+#define WALL_HEIGHT (Y_GROUND + 25)
 #define WALL_WIDTH FENCE_X
 
 char* text[]={"No shadows",
@@ -611,8 +611,8 @@ static void drawWall()
 void drawRoof(double ROOF_BASE, double BASE_Z)
 {
    glPushMatrix();
-   float ROOF_TOP = ROOF_BASE + 7;
-   float OFFSET = 12.0;
+   float ROOF_TOP = ROOF_BASE + 10;
+   float OFFSET = 15.0;
    float Y_MID = (ROOF_BASE + ROOF_TOP)/2.0;
    glEnable(GL_TEXTURE_2D);
    glBindTexture(GL_TEXTURE_2D, shingle);
@@ -663,7 +663,7 @@ static void drawHouse()
    // Draw door
    glColor3f(1, 1, 1);
    float DOOR_HEIGHT = ACCENT_HEIGHT - 4;
-   float DOOR_WIDTH = 6;
+   float DOOR_WIDTH = 7;
    drawCubeWithoutTexture(0, DOOR_HEIGHT, FENCE_Z, DOOR_WIDTH, 0.5,
                           1, 0); 
    drawCubeWithoutTexture(-DOOR_WIDTH + 0.5, (DOOR_HEIGHT + Y_GROUND)/2, 
@@ -687,11 +687,11 @@ static void drawHouse()
    glDisable(GL_TEXTURE_2D);
    glColor3f(2*0.24725, 2*0.1995, 2*0.0745);
    materials(&bronze);
-   drawSphere(2*DOOR_WIDTH/3, Y_GROUND + 8.7, FENCE_Z - 0.5, 0.5); 
+   drawSphere(3*DOOR_WIDTH/4, Y_GROUND + 10.5, FENCE_Z - 0.5, 0.5); 
 
    // Draw windows
    float WINDOW_TOP = DOOR_HEIGHT;
-   float WINDOW_BOTTOM = DOOR_HEIGHT - 10;
+   float WINDOW_BOTTOM = DOOR_HEIGHT - 13;
    float WINDOW_WIDTH = 10;
    float WINDOW_OFFSET = 30;
    int i;
