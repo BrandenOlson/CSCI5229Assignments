@@ -692,7 +692,8 @@ static void drawHouse()
    // Door patio
    float PATIO_WIDTH = DOOR_WIDTH;
    drawCube(0, (DOOR_BOTTOM + Y_GROUND)/2, FENCE_Z - PATIO_WIDTH,
-                          DOOR_WIDTH + 3, (DOOR_BOTTOM - Y_GROUND)/2, PATIO_WIDTH, concrete);
+                          DOOR_WIDTH + 3, (DOOR_BOTTOM - Y_GROUND)/2,
+                          PATIO_WIDTH, concrete);
 
    // Draw windows
    float WINDOW_TOP = DOOR_HEIGHT;
@@ -845,7 +846,8 @@ static void drawAnnulus(double rBig, double rSmall, double x, double y,
    glPopMatrix(); 
 }
 
-static void drawKeg(double r, double h, double x, double y, double z)
+static void drawKeg(double r, double h, double x, double y, double z,
+                    int rotation)
 {
    glPushMatrix();
    materials(&metal);
@@ -854,6 +856,7 @@ static void drawKeg(double r, double h, double x, double y, double z)
    drawTorus(x, y + h/2, z, r/20, r);
    drawTorus(x, y + 3*h/4, z, r/20, r);
    glTranslated(x, y, z);
+   glRotated(rotation, 0, 1, 0);
    glScaled(r, h, r);
    drawCylinder(1, 0.9, 0, 0, 0, silver, 0);
    drawCylinder(0.9, 0.9, 0, 0, 0, silver, 0);
@@ -869,7 +872,7 @@ static void drawKeg(double r, double h, double x, double y, double z)
       glNormal3f(Cos(theta), 0, Sin(theta));
       step = (double)(theta - 90)/180;
       glTexCoord2f(step, 0);
-      glVertex3d(HANDLE_RADIUS*Cos(theta), 0.9, HANDLE_RADIUS*Sin(theta));
+      glVertex3d(HANDLE_RADIUS*Cos(theta), 0.93, HANDLE_RADIUS*Sin(theta));
       glTexCoord2f(step, 0.1);
       glVertex3d(HANDLE_RADIUS*Cos(theta), 0.97, HANDLE_RADIUS*Sin(theta));
    }
@@ -881,7 +884,7 @@ static void drawKeg(double r, double h, double x, double y, double z)
       glNormal3f(Cos(theta), 0, Sin(theta));
       step = (double)(theta - 270)/180;
       glTexCoord2f(step, 0);
-      glVertex3d(HANDLE_RADIUS*Cos(theta), 0.9, HANDLE_RADIUS*Sin(theta));
+      glVertex3d(HANDLE_RADIUS*Cos(theta), 0.93, HANDLE_RADIUS*Sin(theta));
       glTexCoord2f(step, 0.1);
       glVertex3d(HANDLE_RADIUS*Cos(theta), 0.97, HANDLE_RADIUS*Sin(theta));
    }
@@ -893,7 +896,7 @@ static void drawKeg(double r, double h, double x, double y, double z)
       glNormal3f(Cos(theta), 0, Sin(theta));
       step = (double)(theta - 90)/180;
       glTexCoord2f(step, 0);
-      glVertex3d(0.9*Cos(theta), 0.9, 0.9*Sin(theta));
+      glVertex3d(0.9*Cos(theta), 0.93, 0.9*Sin(theta));
       glTexCoord2f(step, 0.1);
       glVertex3d(0.9*Cos(theta), 0.97, 0.9*Sin(theta));
    }
@@ -905,7 +908,7 @@ static void drawKeg(double r, double h, double x, double y, double z)
       glNormal3f(Cos(theta), 0, Sin(theta));
       step = (double)(theta - 270)/180;
       glTexCoord2f(step, 0);
-      glVertex3d(0.9*Cos(theta), 0.9, 0.9*Sin(theta));
+      glVertex3d(0.9*Cos(theta), 0.93, 0.9*Sin(theta));
       glTexCoord2f(step, 0.1);
       glVertex3d(0.9*Cos(theta), 0.97, 0.9*Sin(theta));
    }
@@ -937,11 +940,15 @@ static void drawKeg(double r, double h, double x, double y, double z)
    glDisable(GL_TEXTURE_2D);
    drawCylinder(1.05, 0.03, 0, 0.97, 0, silver, 0);
    drawCylinder(0.9, 0.03, 0, 0.97, 0, silver, 0);
+   drawCylinder(1.05, 0.03, 0, 0.9, 0, silver, 0);
+   drawCylinder(0.9, 0.03, 0, 0.9, 0, silver, 0);
    glColor3f(0.5, 0.5, 0.5);
    drawAnnulus(1.05, 1, 0, 0.90, 0, silver);
+   drawAnnulus(1.05, 0.9, 0, 0.93, 0, silver);
    drawAnnulus(1.05, 0.9, 0, 0.97, 0, silver);
    drawAnnulus(1.05, 0.9, 0, 1, 0, silver);
    drawAnnulus(1, 0.01, 0, 0.90, 0, silver);
+   drawAnnulus(0.15, 0.1, 0, 1, 0, silver); 
    drawCylinder(0.15, 0.1, 0, 0.90, 0, silver, 0);
    glPopMatrix();
 }
@@ -1162,8 +1169,8 @@ void drawScene()
 {
    drawFence();
    drawHouse();
-   drawKeg(2.5, 10, -13, Y_GROUND, -5);
-   drawKeg(2.5, 10, -13, Y_GROUND, 5);
+   drawKeg(2.5, 10, -13, Y_GROUND, -5, 0);
+   drawKeg(2.5, 10, -13, Y_GROUND, 5, -45);
 
    drawTable(0, -1.5, 0, TABLE_WIDTH, 0.5, TABLE_LENGTH);
    drawLamp(LIGHT_RADIUS + 1, Y_GROUND, 0);
