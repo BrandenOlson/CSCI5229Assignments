@@ -77,12 +77,28 @@ materialStruct plastic =
    30.8
 };
 
+materialStruct bronze =
+{
+   {0.2125, 0.1275, 0.054, 1.0},
+   {0.751, 0.606, 0.226, 1.0},
+   {0.628, 0.555, 0.366721},
+   40
+};
+
 materialStruct metal =
 {
    {0.33, 0.22, 0.03, 1.0},
    {0.78, 0.57, 0.11, 1.0},
    {0.99, 0.91, 0.81, 1.0},
-   27.8
+   100.0
+};
+
+materialStruct wooden =
+{
+   {0.5, 0.5, 0.5, 1.0},
+   {0.6, 0.0, 0.0, 1.0},
+   {0.8, 0.6, 0.6, 1.0},
+   0.0
 };
 
 void makeShadowProjection(float L[4], float E[4], float N[4])
@@ -275,20 +291,20 @@ static void drawCylinder(double r, double h, double x, double y, double z,
 
 // Thanks to mrmoo on opengl.org for help with this
 void drawCylinderWithoutTexture(double r, double h, double x, double y, 
-                                double z, int rotation)
+                                double z, int rotation, int enableLight)
 {
    const int SIDE_COUNT = 100;
    glPushMatrix();
 
    glTranslated(x, y, z);
-   glRotated(rotation, 1, 1, 0); 
+   glRotated(rotation, 0, 0, -1); 
    glScaled(r, h, r);
 
    glBegin(GL_QUAD_STRIP); 
    int i = 0;
    for (; i <= SIDE_COUNT; i++) {     
        float angle = i*((1.0/SIDE_COUNT) * (2*PI));
-       glNormal3d( cos(angle), 0, sin(angle) );
+       if(enableLight) { glNormal3d( cos(angle), 0, sin(angle) ); }
        glVertex3d( 1*cos(angle), 1, 1*sin(angle) );
        glVertex3d( 1*cos(angle), 0, 1*sin(angle) );   }
    glEnd();
@@ -645,6 +661,7 @@ static void drawHouse()
    drawRoof(ACCENT_HEIGHT + ACCENT_WIDTH, FENCE_Z - ACCENT_WIDTH);
 
    // Draw door
+   glColor3f(1, 1, 1);
    float DOOR_HEIGHT = ACCENT_HEIGHT - 4;
    float DOOR_WIDTH = 6;
    drawCubeWithoutTexture(0, DOOR_HEIGHT, FENCE_Z, DOOR_WIDTH, 0.5,
@@ -659,15 +676,18 @@ static void drawHouse()
    // Converted bmp format was behaving strangely. Using 0.1 instead of 0 for
    // the LHS seems to work
    glTexCoord2f(0.1, 0);
-   glVertex3f(DOOR_WIDTH - 1, Y_GROUND, FENCE_Z);
+   glVertex3f(DOOR_WIDTH - 1, Y_GROUND, FENCE_Z - 0.1);
    glTexCoord2f(1, 0);
-   glVertex3f(1 - DOOR_WIDTH, Y_GROUND, FENCE_Z);
+   glVertex3f(1 - DOOR_WIDTH, Y_GROUND, FENCE_Z - 0.1);
    glTexCoord2f(1, 1);
-   glVertex3f(1 - DOOR_WIDTH, DOOR_HEIGHT, FENCE_Z);
+   glVertex3f(1 - DOOR_WIDTH, DOOR_HEIGHT, FENCE_Z - 0.1);
    glTexCoord2f(0.1, 1);
-   glVertex3f(DOOR_WIDTH - 1, DOOR_HEIGHT, FENCE_Z);
+   glVertex3f(DOOR_WIDTH - 1, DOOR_HEIGHT, FENCE_Z - 0.1);
    glEnd();
    glDisable(GL_TEXTURE_2D);
+   glColor3f(2*0.24725, 2*0.1995, 2*0.0745);
+   materials(&bronze);
+   drawSphere(2*DOOR_WIDTH/3, Y_GROUND + 8.7, FENCE_Z - 0.5, 0.5); 
 
    // Draw windows
    float WINDOW_TOP = DOOR_HEIGHT;
@@ -677,19 +697,19 @@ static void drawHouse()
    int i;
    for(i = 1; i >= -1; i -= 2)
    {
+      materials(&metal);
+      glColor3f(1, 1, 1);
       WINDOW_OFFSET *= i;
-      drawCubeWithoutTexture(WINDOW_OFFSET, WINDOW_TOP, FENCE_Z,
+      drawCubeWithoutTexture(WINDOW_OFFSET, WINDOW_TOP, FENCE_Z - 0.1,
                              WINDOW_WIDTH, 0.5, 1, 0);
-      drawCubeWithoutTexture(WINDOW_OFFSET, WINDOW_BOTTOM, FENCE_Z,
+      drawCubeWithoutTexture(WINDOW_OFFSET, WINDOW_BOTTOM, FENCE_Z - 0.1,
                              WINDOW_WIDTH, 0.5, 1, 0);
       drawCubeWithoutTexture(WINDOW_OFFSET + WINDOW_WIDTH - 0.5, 
                              (WINDOW_TOP + WINDOW_BOTTOM)/2,
-                             FENCE_Z, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2, 
-                             1, 0);
+                             FENCE_Z - 0.1, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2,                             1, 0);
       drawCubeWithoutTexture(WINDOW_OFFSET - WINDOW_WIDTH + 0.5, 
                              (WINDOW_TOP + WINDOW_BOTTOM)/2,
-                             FENCE_Z, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2, 
-                             1, 0);
+                             FENCE_Z - 0.1, 0.5, (WINDOW_TOP - WINDOW_BOTTOM)/2,                             1, 0);
       float WINDOW_MID = (WINDOW_TOP + WINDOW_BOTTOM)/2;
       glEnable(GL_TEXTURE_2D);
       glBindTexture(GL_TEXTURE_2D, blinds);
@@ -823,6 +843,7 @@ static void drawAnnulus(double rBig, double rSmall, double x, double y,
 static void drawKeg(double r, double h, double x, double y, double z)
 {
    glPushMatrix();
+   materials(&metal);
    glColor3f(0.439, 0.439, 0.439);
    drawTorus(x, y + h/4, z, r/20, r);
    drawTorus(x, y + h/2, z, r/20, r);
@@ -950,7 +971,7 @@ void drawLampHead(double x, double y, double z, int rotation, double rSmall,
    glTranslated(x, y, z);
    glRotated(rotation, 0, 0, -1);
    drawSlicedCone(rSmall, rBig, height, 0, 0, 0);
-   drawCylinderWithoutTexture(rSmall, 0.3, 0, height, 0, 0);
+   drawCylinderWithoutTexture(rSmall, 0.3, 0, height, 0, 0, 1);
    glDisable(GL_LIGHTING);
    glBegin(GL_TRIANGLE_FAN);
    glVertex3f(0, height + 0.3, 0);
@@ -970,6 +991,37 @@ void drawQuarterTorus(double xCenter, double height, double zCenter,
 {
    glPushMatrix();
    glTranslated(xCenter, height, zCenter);
+   double x1, x2, y, z1, z2;
+   int theta = thetaStart;
+   int phi;
+   int delta = 5;
+   for(; theta <= thetaStart + 90 - delta; theta += delta)
+   {
+      glBegin(GL_QUAD_STRIP);
+      phi = 0;
+      for(; phi <= 360; phi += 2*delta)
+      {
+         x1 = (rBig+ rSmall*Cos(phi))*Cos(theta);
+         y = rSmall*Sin(phi);
+         z1 = (rBig + rSmall*Cos(phi))*Sin(theta);
+     //    glNormal3f(Cos(phi)*Cos(theta), Sin(phi), Cos(phi)*Sin(theta));
+         glVertex3d(x1, y, z1);
+         x2 = (rBig + rSmall*Cos(phi))*Cos(theta + delta);
+         z2 = (rBig + rSmall*Cos(phi))*Sin(theta + delta);
+      //   glNormal3f(Cos(phi)*Cos(theta + delta), Sin(phi), Cos(phi)*Sin(theta + delta));
+         glVertex3d(x2, y, z2);
+      }
+      glEnd();
+   }
+   glPopMatrix();
+}
+
+void drawVerticalQuarterTorus(double xCenter, double height, double zCenter,
+                    double rSmall, double rBig, int thetaStart)
+{
+   glPushMatrix();
+   glTranslated(xCenter, height, zCenter);
+   glRotated(90, 0, 0, 1);
    double x1, x2, y, z1, z2;
    int theta = thetaStart;
    int phi;
@@ -1032,8 +1084,24 @@ void drawCord()
       glEnd();
    }
    float radius = 15.0 ;
+   float radius2 = 1.5;
+   drawCylinderWithoutTexture(rSmall, 15, amplitude + radius + 15, y, 
+                              z2 + radius, -90, 0);
    drawQuarterTorus(amplitude + radius, y, z2, rSmall, radius, 90);  
- 
+   drawQuarterTorus(amplitude + radius + 15, y, z2 + radius + radius2, rSmall, 
+                    radius2, 270); 
+   drawVerticalQuarterTorus(amplitude + radius + radius2 + 15,
+                            y + radius2, z2 + radius + radius2, rSmall,
+                            radius2, 90);
+   drawCubeWithoutTexture(amplitude + radius + radius2 + 15,
+                          y + radius2, z2 + radius + 2*radius2,
+                          0.3, 0.3, 0.3, 0);
+   glColor3f(1, 1, 1);
+
+   // Draw outlet on house (it's convenient to draw it here)
+   drawCubeWithoutTexture(amplitude + radius + radius2 + 15,
+                          y + radius2 + 0.5, z2 + radius + 2*radius2,
+                          0.4, 1, 0.1, 0);
    glPopMatrix();
 }
 
