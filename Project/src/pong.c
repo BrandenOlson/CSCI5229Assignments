@@ -20,7 +20,7 @@ int light = 1;    //  Lighting
 int mode = 4;
 // Texture allocation
 unsigned int brick, canside, cantop, red, shingle, wood, door, blinds, grass, 
-             silver, sky;
+             silver, sky, concrete;
 
 // Light values
 int emission  =   0;  // Emission intensity (%)
@@ -664,21 +664,22 @@ static void drawHouse()
    glColor3f(1, 1, 1);
    float DOOR_HEIGHT = ACCENT_HEIGHT - 4;
    float DOOR_WIDTH = 7;
+   float DOOR_BOTTOM = Y_GROUND + 1;
    drawCubeWithoutTexture(0, DOOR_HEIGHT, FENCE_Z, DOOR_WIDTH, 0.5,
                           1, 0); 
-   drawCubeWithoutTexture(-DOOR_WIDTH + 0.5, (DOOR_HEIGHT + Y_GROUND)/2, 
-                          FENCE_Z, 0.5, (DOOR_HEIGHT - Y_GROUND)/2, 1, 0);
-   drawCubeWithoutTexture(DOOR_WIDTH - 0.5, (DOOR_HEIGHT + Y_GROUND)/2, 
-                          FENCE_Z, 0.5, (DOOR_HEIGHT - Y_GROUND)/2, 1, 0);
+   drawCubeWithoutTexture(-DOOR_WIDTH + 0.5, (DOOR_HEIGHT + DOOR_BOTTOM)/2, 
+                          FENCE_Z, 0.5, (DOOR_HEIGHT - DOOR_BOTTOM)/2, 1, 0);
+   drawCubeWithoutTexture(DOOR_WIDTH - 0.5, (DOOR_HEIGHT + DOOR_BOTTOM)/2, 
+                          FENCE_Z, 0.5, (DOOR_HEIGHT - DOOR_BOTTOM)/2, 1, 0);
    glEnable(GL_TEXTURE_2D);
    glBindTexture(GL_TEXTURE_2D, door);
    glBegin(GL_QUADS);
    // Converted bmp format was behaving strangely. Using 0.1 instead of 0 for
    // the LHS seems to work
    glTexCoord2f(0.1, 0);
-   glVertex3f(DOOR_WIDTH - 1, Y_GROUND, FENCE_Z - 0.1);
+   glVertex3f(DOOR_WIDTH - 1, DOOR_BOTTOM, FENCE_Z - 0.1);
    glTexCoord2f(1, 0);
-   glVertex3f(1 - DOOR_WIDTH, Y_GROUND, FENCE_Z - 0.1);
+   glVertex3f(1 - DOOR_WIDTH, DOOR_BOTTOM, FENCE_Z - 0.1);
    glTexCoord2f(1, 1);
    glVertex3f(1 - DOOR_WIDTH, DOOR_HEIGHT, FENCE_Z - 0.1);
    glTexCoord2f(0.1, 1);
@@ -687,7 +688,11 @@ static void drawHouse()
    glDisable(GL_TEXTURE_2D);
    glColor3f(2*0.24725, 2*0.1995, 2*0.0745);
    materials(&bronze);
-   drawSphere(3*DOOR_WIDTH/4, Y_GROUND + 10.5, FENCE_Z - 0.5, 0.5); 
+   drawSphere(3*DOOR_WIDTH/4, DOOR_BOTTOM + 10.5, FENCE_Z - 0.5, 0.5); 
+   // Door patio
+   float PATIO_WIDTH = DOOR_WIDTH;
+   drawCube(0, (DOOR_BOTTOM + Y_GROUND)/2, FENCE_Z - PATIO_WIDTH,
+                          DOOR_WIDTH + 3, (DOOR_BOTTOM - Y_GROUND)/2, PATIO_WIDTH, concrete);
 
    // Draw windows
    float WINDOW_TOP = DOOR_HEIGHT;
@@ -1480,6 +1485,7 @@ void loadTextures()
    red = LoadTexBMP("images/red.bmp");
    canside = LoadTexBMP("images/can2.bmp");
    cantop = LoadTexBMP("images/beercan.bmp");
+   concrete = LoadTexBMP("images/concrete.bmp");
    wood = LoadTexBMP("images/wood.bmp");
    brick = LoadTexBMP("images/brick.bmp");
    grass = LoadTexBMP("images/grass.bmp");
