@@ -838,7 +838,7 @@ void drawFence()
 }
 
 static void drawAnnulus(double rBig, double rSmall, double x, double y, 
-                        double z, unsigned int texture)
+                        double z, unsigned int texture, int normal)
 {
    glPushMatrix();
    glTranslated(x, y, z);
@@ -850,11 +850,11 @@ static void drawAnnulus(double rBig, double rSmall, double x, double y,
    int i = 0;
    for(; i <= 360; i += 10)
    {
-      glNormal3d(0, 1, 0);
       glTexCoord2f(inner*Cos(i), inner*Sin(i));
+      glNormal3d(0, normal, 0);
       glVertex3d(inner*Cos(i), 0, inner*Sin(i));
-      glNormal3d(0, 1, 0);
       glTexCoord2f(Cos(i), Sin(i));
+      glNormal3d(0, normal, 0);
       glVertex3d(Cos(i), 0, Sin(i));
    }
    glEnd();
@@ -978,12 +978,12 @@ static void drawKeg(double r, double h, double x, double y, double z,
    drawCylinder(1.05, 0.03, 0, 0.9, 0, silver, 0);
    drawCylinder(0.9, 0.03, 0, 0.9, 0, silver, 0);
    glColor3f(0.5, 0.5, 0.5);
-   drawAnnulus(1.05, 1, 0, 0.90, 0, silver);
-   drawAnnulus(1.05, 0.9, 0, 0.93, 0, silver);
-   drawAnnulus(1.05, 0.9, 0, 0.97, 0, silver);
-   drawAnnulus(1.05, 0.9, 0, 1, 0, silver);
-   drawAnnulus(1, 0.01, 0, 0.90, 0, silver);
-   drawAnnulus(0.15, 0.1, 0, 1, 0, silver); 
+   drawAnnulus(1.055, 1, 0, 0.90, 0, silver, -1);
+   drawAnnulus(1.05, 0.9, 0, 0.93, 0, silver, 1);
+   drawAnnulus(1.055, 0.9, 0, 0.97, 0, silver, -1);
+   drawAnnulus(1.05, 0.9, 0, 1, 0, silver, 1);
+   drawAnnulus(1, 0.01, 0, 0.90, 0, silver, 1);
+   drawAnnulus(0.15, 0.1, 0, 1, 0, silver, 1); 
    drawCylinder(0.15, 0.1, 0, 0.90, 0, silver, 0);
    glPopMatrix();
 }
