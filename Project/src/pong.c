@@ -49,13 +49,6 @@ const double Z0 = -6;
 #define WALL_HEIGHT (Y_GROUND + 25)
 #define WALL_WIDTH FENCE_X
 
-char* text[]={"No shadows",
-              "Draw flattened scene",
-              "Flattened scene with lighting disabled",
-              "Blended shadows with Z-buffer read-only",
-              "Blended shadows with stencil buffer",
-             };
-
 float N[] = {0, -1, 0}; // Normal vector for the plane
 float E[] = {0, Y_GROUND, 0 }; // Point of the ground plane
 float E2[] = {0, -1, 0}; // Point of the table plane
@@ -146,6 +139,29 @@ void skyVertex(double th,double ph)
                                            // to compensate for a weird strip 
                                            // without texture
    glVertex3d(Sin(ph)*Cos(th), Sin(th) , Cos(ph)*Cos(th));
+}
+
+void drawSquare(float x1, float y1, float z1,
+                float x2, float y2, float z2,
+                float x3, float y3, float z3,
+                float x4, float y4, float z4)
+{
+   glPushMatrix();
+   glBegin(GL_POLYGON);
+   double nx = (y1 - y2)*(z3 - z2) - (z1 - z2)*(y3 - y2);
+   double ny = (z1 - z2)*(x3 - x2) - (x1 - x2)*(z3 - z2);
+   double nz = (x1 - x2)*(y3 - y2) - (y1 - y2)*(x3 - x2);
+   glNormal3f(nx, ny, nz);
+   glVertex3d(x1, y1, z1);
+   glNormal3f(nx, ny, nz);
+   glVertex3d(x2, y2, z2);
+   glNormal3f(nx, ny, nz);
+   glVertex3d(x3, y3, z3);
+   glNormal3f(nx, ny, nz);
+   glVertex3d(x4, y4, z4);
+   glEnd();
+   glPopMatrix();
+
 }
 
 static void drawSphere(double x, double y, double z, double r)
@@ -913,30 +929,49 @@ static void drawKeg(double r, double h, double x, double y, double z,
       glVertex3d(0.9*Cos(theta), 0.97, 0.9*Sin(theta));
    }
    glEnd();
-   glBegin(GL_QUADS);
-   glVertex3d(HANDLE_RADIUS*Cos(90), 0.9, HANDLE_RADIUS*Sin(90));
-   glVertex3d(0.9*Cos(90), 0.9, 0.9*Sin(90));
-   glVertex3d(0.9*Cos(90), 0.97, 0.9*Sin(90));
-   glVertex3d(HANDLE_RADIUS*Cos(90), 0.97, HANDLE_RADIUS*Sin(90));
-   glEnd();
-   glBegin(GL_QUADS);
-   glVertex3d(HANDLE_RADIUS*Cos(230), 0.9, HANDLE_RADIUS*Sin(230));
-   glVertex3d(0.9*Cos(230), 0.9, 0.9*Sin(230));
-   glVertex3d(0.9*Cos(230), 0.97, 0.9*Sin(230));
-   glVertex3d(HANDLE_RADIUS*Cos(230), 0.97, HANDLE_RADIUS*Sin(230));
-   glEnd();
-   glBegin(GL_QUADS);
-   glVertex3d(HANDLE_RADIUS*Cos(270), 0.9, HANDLE_RADIUS*Sin(270));
-   glVertex3d(0.9*Cos(270), 0.9, 0.9*Sin(270));
-   glVertex3d(0.9*Cos(270), 0.97, 0.9*Sin(270));
-   glVertex3d(HANDLE_RADIUS*Cos(270), 0.97, HANDLE_RADIUS*Sin(270));
-   glEnd();
-   glBegin(GL_QUADS);
-   glVertex3d(HANDLE_RADIUS*Cos(410), 0.9, HANDLE_RADIUS*Sin(410));
-   glVertex3d(0.9*Cos(410), 0.9, 0.9*Sin(410));
-   glVertex3d(0.9*Cos(410), 0.97, 0.9*Sin(410));
-   glVertex3d(HANDLE_RADIUS*Cos(410), 0.97, HANDLE_RADIUS*Sin(410));
-   glEnd();
+   drawSquare(HANDLE_RADIUS*Cos(90), 0.97, HANDLE_RADIUS*Sin(90),
+              0.9*Cos(90), 0.97, 0.9*Sin(90),
+              0.9*Cos(90), 0.9, 0.9*Sin(90),
+              HANDLE_RADIUS*Cos(90), 0.9, HANDLE_RADIUS*Sin(90));
+   //glBegin(GL_QUADS);
+   //glVertex3d(HANDLE_RADIUS*Cos(90), 0.9, HANDLE_RADIUS*Sin(90));
+   //glVertex3d(0.9*Cos(90), 0.9, 0.9*Sin(90));
+   //glVertex3d(0.9*Cos(90), 0.97, 0.9*Sin(90));
+   //glVertex3d(HANDLE_RADIUS*Cos(90), 0.97, HANDLE_RADIUS*Sin(90));
+   //glEnd();
+
+   drawSquare(HANDLE_RADIUS*Cos(230), 0.97, HANDLE_RADIUS*Sin(230),
+              HANDLE_RADIUS*Cos(230), 0.9, HANDLE_RADIUS*Sin(230),
+              0.9*Cos(230), 0.9, 0.9*Sin(230),
+              0.9*Cos(230), 0.97, 0.9*Sin(230));
+   //glBegin(GL_QUADS);
+   //glVertex3d(HANDLE_RADIUS*Cos(230), 0.9, HANDLE_RADIUS*Sin(230));
+   //glVertex3d(0.9*Cos(230), 0.9, 0.9*Sin(230));
+   //glVertex3d(0.9*Cos(230), 0.97, 0.9*Sin(230));
+   //glVertex3d(HANDLE_RADIUS*Cos(230), 0.97, HANDLE_RADIUS*Sin(230));
+   //glEnd();
+
+   drawSquare(HANDLE_RADIUS*Cos(270), 0.97, HANDLE_RADIUS*Sin(270),
+              0.9*Cos(270), 0.97, 0.9*Sin(270),
+              0.9*Cos(270), 0.9, 0.9*Sin(270),
+              HANDLE_RADIUS*Cos(270), 0.9, HANDLE_RADIUS*Sin(270));
+   //glBegin(GL_QUADS);
+   //glVertex3d(HANDLE_RADIUS*Cos(270), 0.9, HANDLE_RADIUS*Sin(270));
+   //glVertex3d(0.9*Cos(270), 0.9, 0.9*Sin(270));
+   //glVertex3d(0.9*Cos(270), 0.97, 0.9*Sin(270));
+   //glVertex3d(HANDLE_RADIUS*Cos(270), 0.97, HANDLE_RADIUS*Sin(270));
+   //glEnd();
+
+   drawSquare(HANDLE_RADIUS*Cos(410), 0.97, HANDLE_RADIUS*Sin(410),
+              HANDLE_RADIUS*Cos(410), 0.9, HANDLE_RADIUS*Sin(410),
+              0.9*Cos(410), 0.9, 0.9*Sin(410),
+              0.9*Cos(410), 0.97, 0.9*Sin(410));
+   //glBegin(GL_QUADS);
+   //glVertex3d(HANDLE_RADIUS*Cos(410), 0.9, HANDLE_RADIUS*Sin(410));
+   //glVertex3d(0.9*Cos(410), 0.9, 0.9*Sin(410));
+   //glVertex3d(0.9*Cos(410), 0.97, 0.9*Sin(410));
+   //glVertex3d(HANDLE_RADIUS*Cos(410), 0.97, HANDLE_RADIUS*Sin(410));
+   //glEnd();
    glDisable(GL_TEXTURE_2D);
    drawCylinder(1.05, 0.03, 0, 0.97, 0, silver, 0);
    drawCylinder(0.9, 0.03, 0, 0.97, 0, silver, 0);
@@ -966,9 +1001,37 @@ void drawSlicedCone(double rSmall, double rBig, double height, double x,
    glBegin(GL_QUAD_STRIP);
    for(; theta <= 360; theta += delta)
    {
-      glNormal3f(1, 1, Sin(theta));
+      glNormal3d(Cos(theta), 1 - ratio, Sin(theta));
+      //glNormal3f(1, 1, Sin(theta));
       glVertex3d(ratio*Cos(theta), 1, ratio*Sin(theta));
-      glNormal3f(1, 1, Sin(theta));
+      //glNormal3f(1, 1, Sin(theta));
+      glNormal3d(Cos(theta), 1 - ratio, Sin(theta));
+      glVertex3d(Cos(theta), 0, Sin(theta)); 
+   }
+   glEnd();
+
+   glPopMatrix();
+}
+
+void drawSlicedConeForLamp(double rSmall, double rBig, double height, double x, 
+                    double y, double z)
+{
+   glPushMatrix();
+   glTranslated(x, y, z);
+   glScaled(rBig, height, rBig);
+
+   double ratio = rSmall/rBig;   
+   int theta = 0;
+   int delta = 10;
+   glBegin(GL_QUAD_STRIP);
+   for(; theta <= 360; theta += delta)
+   {
+      //glNormal3d(-Cos(theta), -(1 - ratio), -Sin(theta));
+      glNormal3f(0, 1, 0);
+      //glNormal3f(1, 1, Sin(theta));
+      glVertex3d(ratio*Cos(theta), 1, ratio*Sin(theta));
+      //glNormal3f(1, 1, Sin(theta));
+      glNormal3d(-Cos(theta), -(1 - ratio), -Sin(theta));
       glVertex3d(Cos(theta), 0, Sin(theta)); 
    }
    glEnd();
@@ -982,18 +1045,19 @@ void drawLampHead(double x, double y, double z, int rotation, double rSmall,
    glPushMatrix();
    glTranslated(x, y, z);
    glRotated(rotation, 0, 0, -1);
-   drawSlicedCone(rSmall, rBig, height, 0, 0, 0);
+   drawSlicedConeForLamp(rSmall, rBig, height, 0, 0, 0);
    drawCylinderWithoutTexture(rSmall, 0.3, 0, height, 0, 0, 1);
-   glDisable(GL_LIGHTING);
+   //glDisable(GL_LIGHTING);
    glBegin(GL_TRIANGLE_FAN);
    glVertex3f(0, height + 0.3, 0);
    int theta = 0;
    for(; theta <= 360; theta += 20)
    {
+      glNormal3f(0, 1, 0);
       glVertex3f(1.01*rSmall*Cos(theta), height + 0.3, 1.01*rSmall*Sin(theta));
    }
    glEnd();
-   glEnable(GL_LIGHTING);
+   //glEnable(GL_LIGHTING);
 
    glPopMatrix();
 }
@@ -1317,7 +1381,7 @@ void display()
    //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
    //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
 
-
+   drawSquare(0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1);
    
    //  Draw scene
    drawSky(0, -10, 0, 2*GROUND_LENGTH);
@@ -1374,9 +1438,7 @@ void display()
    }
    //  Display parameters
    glWindowPos2i(5, 5);
-   Print("Angle=%d,%d  Dim=%.1f Light=%s", th, ph, dim, light? "On" :
-         "Off");
-   Print(text[mode]);
+   Print("vx = %0.2f, vz = %0.2f", pBall.vx, pBall.vz);
    //  Render the scene and make it visible
    ErrCheck("display");
    glFlush();
@@ -1427,10 +1489,10 @@ void key(unsigned char ch, int x, int y)
       th = 0;
       ph = 25;
    }
-   else if ('j' == ch) { pBall.vxp -= 0.01; }
-   else if ('l' == ch) { pBall.vxp += 0.01; }
-   else if ('k' == ch) { pBall.vzp -= 0.01; }
-   else if ('i' == ch) { pBall.vzp += 0.01; }
+   else if ('j' == ch) { pBall.vx -= 0.1; }
+   else if ('l' == ch) { pBall.vx += 0.1; }
+   else if ('k' == ch) { pBall.vz -= 0.1; }
+   else if ('i' == ch) { pBall.vz += 0.1; }
    else if ('-' == ch) { dim += 0.1; }
    else if ('+' == ch) { dim -= 0.1; }
    else if (27 == ch) { exit(0); } // Exit on ESC
@@ -1474,14 +1536,13 @@ void mouse()
 
 void idle()
 {
-   //  Elapsed time in seconds
-   double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-   // zh = fmod(90*t, 360.0);
-
-   pBall.x += pBall.vx;
-   pBall.y += pBall.vy;
-   pBall.z += pBall.vz; 
-   pBall.vy = pBall.vy + GRAVITY;
+   if(pBall.active)
+   {
+      pBall.x += pBall.vx;
+      pBall.y += pBall.vy;
+      pBall.z += pBall.vz; 
+      pBall.vy = pBall.vy + GRAVITY;
+   }
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
