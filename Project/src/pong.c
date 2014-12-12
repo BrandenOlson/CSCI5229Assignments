@@ -17,18 +17,9 @@ int fov = 55;       //  Field of view (for perspective)
 double asp = 1;     //  Aspect ratio
 double dim = 10.0;   //  Size of world
 int light = 1;    //  Lighting
-int mode = 4;
 // Texture allocation
 unsigned int brick, canside, cantop, red, shingle, wood, door, blinds, grass, 
              silver, sky, concrete;
-
-// Light values
-int emission  =   0;  // Emission intensity (%)
-int ambient   =  30;  // Ambient intensity (%)
-int diffuse   = 0;  // Diffuse intensity (%)
-int specular  =   0;  // Specular intensity (%)
-int shininess =   0;  // Shininess (power of two)
-float shinyvec[1];    // Shininess (value)
 
 const double Z0 = -6;
 
@@ -820,10 +811,6 @@ void drawFence()
    float delta = 0.045;
    for(i = -1; i <= 1; i += delta)
    {
-     // if(i < -0.5 || i > 0.5) 
-     // {
-     //    drawPost(i*FENCE_X, Y_MID, FENCE_Z, 1, FENCE_Y, 0.3);
-     // }
       drawPost(i*FENCE_X, Y_MID, -FENCE_Z, 1, FENCE_Y, 0.3);
       drawPost(FENCE_X, Y_MID, i*FENCE_Z, 0.3, FENCE_Y, 1);
       drawPost(-FENCE_X, Y_MID, i*FENCE_Z, 0.3, FENCE_Y, 1);
@@ -933,45 +920,21 @@ static void drawKeg(double r, double h, double x, double y, double z,
               0.9*Cos(90), 0.97, 0.9*Sin(90),
               0.9*Cos(90), 0.9, 0.9*Sin(90),
               HANDLE_RADIUS*Cos(90), 0.9, HANDLE_RADIUS*Sin(90));
-   //glBegin(GL_QUADS);
-   //glVertex3d(HANDLE_RADIUS*Cos(90), 0.9, HANDLE_RADIUS*Sin(90));
-   //glVertex3d(0.9*Cos(90), 0.9, 0.9*Sin(90));
-   //glVertex3d(0.9*Cos(90), 0.97, 0.9*Sin(90));
-   //glVertex3d(HANDLE_RADIUS*Cos(90), 0.97, HANDLE_RADIUS*Sin(90));
-   //glEnd();
 
    drawSquare(HANDLE_RADIUS*Cos(230), 0.97, HANDLE_RADIUS*Sin(230),
               HANDLE_RADIUS*Cos(230), 0.9, HANDLE_RADIUS*Sin(230),
               0.9*Cos(230), 0.9, 0.9*Sin(230),
               0.9*Cos(230), 0.97, 0.9*Sin(230));
-   //glBegin(GL_QUADS);
-   //glVertex3d(HANDLE_RADIUS*Cos(230), 0.9, HANDLE_RADIUS*Sin(230));
-   //glVertex3d(0.9*Cos(230), 0.9, 0.9*Sin(230));
-   //glVertex3d(0.9*Cos(230), 0.97, 0.9*Sin(230));
-   //glVertex3d(HANDLE_RADIUS*Cos(230), 0.97, HANDLE_RADIUS*Sin(230));
-   //glEnd();
 
    drawSquare(HANDLE_RADIUS*Cos(270), 0.97, HANDLE_RADIUS*Sin(270),
               0.9*Cos(270), 0.97, 0.9*Sin(270),
               0.9*Cos(270), 0.9, 0.9*Sin(270),
               HANDLE_RADIUS*Cos(270), 0.9, HANDLE_RADIUS*Sin(270));
-   //glBegin(GL_QUADS);
-   //glVertex3d(HANDLE_RADIUS*Cos(270), 0.9, HANDLE_RADIUS*Sin(270));
-   //glVertex3d(0.9*Cos(270), 0.9, 0.9*Sin(270));
-   //glVertex3d(0.9*Cos(270), 0.97, 0.9*Sin(270));
-   //glVertex3d(HANDLE_RADIUS*Cos(270), 0.97, HANDLE_RADIUS*Sin(270));
-   //glEnd();
 
    drawSquare(HANDLE_RADIUS*Cos(410), 0.97, HANDLE_RADIUS*Sin(410),
               HANDLE_RADIUS*Cos(410), 0.9, HANDLE_RADIUS*Sin(410),
               0.9*Cos(410), 0.9, 0.9*Sin(410),
               0.9*Cos(410), 0.97, 0.9*Sin(410));
-   //glBegin(GL_QUADS);
-   //glVertex3d(HANDLE_RADIUS*Cos(410), 0.9, HANDLE_RADIUS*Sin(410));
-   //glVertex3d(0.9*Cos(410), 0.9, 0.9*Sin(410));
-   //glVertex3d(0.9*Cos(410), 0.97, 0.9*Sin(410));
-   //glVertex3d(HANDLE_RADIUS*Cos(410), 0.97, HANDLE_RADIUS*Sin(410));
-   //glEnd();
    glDisable(GL_TEXTURE_2D);
    drawCylinder(1.05, 0.03, 0, 0.97, 0, silver, 0);
    drawCylinder(0.9, 0.03, 0, 0.97, 0, silver, 0);
@@ -1002,9 +965,7 @@ void drawSlicedCone(double rSmall, double rBig, double height, double x,
    for(; theta <= 360; theta += delta)
    {
       glNormal3d(Cos(theta), 1 - ratio, Sin(theta));
-      //glNormal3f(1, 1, Sin(theta));
       glVertex3d(ratio*Cos(theta), 1, ratio*Sin(theta));
-      //glNormal3f(1, 1, Sin(theta));
       glNormal3d(Cos(theta), 1 - ratio, Sin(theta));
       glVertex3d(Cos(theta), 0, Sin(theta)); 
    }
@@ -1026,11 +987,8 @@ void drawSlicedConeForLamp(double rSmall, double rBig, double height, double x,
    glBegin(GL_QUAD_STRIP);
    for(; theta <= 360; theta += delta)
    {
-      //glNormal3d(-Cos(theta), -(1 - ratio), -Sin(theta));
       glNormal3f(0, 1, 0);
-      //glNormal3f(1, 1, Sin(theta));
       glVertex3d(ratio*Cos(theta), 1, ratio*Sin(theta));
-      //glNormal3f(1, 1, Sin(theta));
       glNormal3d(-Cos(theta), -(1 - ratio), -Sin(theta));
       glVertex3d(Cos(theta), 0, Sin(theta)); 
    }
@@ -1047,7 +1005,6 @@ void drawLampHead(double x, double y, double z, int rotation, double rSmall,
    glRotated(rotation, 0, 0, -1);
    drawSlicedConeForLamp(rSmall, rBig, height, 0, 0, 0);
    drawCylinderWithoutTexture(rSmall, 0.3, 0, height, 0, 0, 1);
-   //glDisable(GL_LIGHTING);
    glBegin(GL_TRIANGLE_FAN);
    glVertex3f(0, height + 0.3, 0);
    int theta = 0;
@@ -1057,7 +1014,6 @@ void drawLampHead(double x, double y, double z, int rotation, double rSmall,
       glVertex3f(1.01*rSmall*Cos(theta), height + 0.3, 1.01*rSmall*Sin(theta));
    }
    glEnd();
-   //glEnable(GL_LIGHTING);
 
    glPopMatrix();
 }
@@ -1080,11 +1036,9 @@ void drawQuarterTorus(double xCenter, double height, double zCenter,
          x1 = (rBig+ rSmall*Cos(phi))*Cos(theta);
          y = rSmall*Sin(phi);
          z1 = (rBig + rSmall*Cos(phi))*Sin(theta);
-     //    glNormal3f(Cos(phi)*Cos(theta), Sin(phi), Cos(phi)*Sin(theta));
          glVertex3d(x1, y, z1);
          x2 = (rBig + rSmall*Cos(phi))*Cos(theta + delta);
          z2 = (rBig + rSmall*Cos(phi))*Sin(theta + delta);
-      //   glNormal3f(Cos(phi)*Cos(theta + delta), Sin(phi), Cos(phi)*Sin(theta + delta));
          glVertex3d(x2, y, z2);
       }
       glEnd();
@@ -1111,11 +1065,9 @@ void drawVerticalQuarterTorus(double xCenter, double height, double zCenter,
          x1 = (rBig+ rSmall*Cos(phi))*Cos(theta);
          y = rSmall*Sin(phi);
          z1 = (rBig + rSmall*Cos(phi))*Sin(theta);
-     //    glNormal3f(Cos(phi)*Cos(theta), Sin(phi), Cos(phi)*Sin(theta));
          glVertex3d(x1, y, z1);
          x2 = (rBig + rSmall*Cos(phi))*Cos(theta + delta);
          z2 = (rBig + rSmall*Cos(phi))*Sin(theta + delta);
-      //   glNormal3f(Cos(phi)*Cos(theta + delta), Sin(phi), Cos(phi)*Sin(theta + delta));
          glVertex3d(x2, y, z2);
       }
       glEnd();
@@ -1381,8 +1333,6 @@ void display()
    //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 32.0f);
    //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, white);
 
-   drawSquare(0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1);
-   
    //  Draw scene
    drawSky(0, -10, 0, 2*GROUND_LENGTH);
    drawGround();
@@ -1496,7 +1446,6 @@ void key(unsigned char ch, int x, int y)
    else if ('-' == ch) { dim += 0.1; }
    else if ('+' == ch) { dim -= 0.1; }
    else if (27 == ch) { exit(0); } // Exit on ESC
-   else if (ch == 'm' && mode<MODE) { mode++; };
 
    //  Reproject
    Project(fov, asp, dim);
