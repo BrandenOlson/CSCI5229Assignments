@@ -2,7 +2,7 @@ OpenPong (by Branden Olson)
 ===========================
 
 Author: Branden Olson  
-Email: branden.olson@colorado.edu
+Email: branden.olson@colorado.edu  
 Source file: pong.c
 
 Description
@@ -28,6 +28,9 @@ the program (which is used for a lot of calculations).
 
 Logistics
 ---------
+* Just run
+    make clean; make; ./pong
+  to compile and execute the program.
 * I keep all of my texture images in an "images" folder. They are read from
   this folder in the code, so there is no need to configure anything.
 * I created and linked a library called "OlsonLib.h", in which I plan to move
